@@ -244,16 +244,26 @@ void APlayerCharacter::Fire()
 	if (m_EquipWeapon == nullptr || m_State != EPlayerState::Idle)
 		return;
 
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_EquipWeapon->AmmoEmpty())
+	{
+		if (m_Controller && m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) == false)
+			Reloading();
+
+		return;
+	}
+
 	m_CrosshairRecoilValue = m_EquipWeapon->GetCrosshairRecoil();
 	m_EquipWeapon->Fire(m_TraceHitResult);
-	PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
+
+	if (m_FireAnimMontage)
+		PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
 
 	m_State = EPlayerState::Fire;
 
 	if (m_EquipWeapon->IsAutoFire())
 		GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
 
-	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
 	if (m_Controller)
 		m_Controller->SubAmmo();
 }
@@ -271,13 +281,17 @@ void APlayerCharacter::FireTimerEnd()
 
 void APlayerCharacter::Reloading()
 {
-	if (m_EquipWeapon == nullptr || m_State != EPlayerState::Idle)
+	if (m_EquipWeapon == nullptr || (m_State != EPlayerState::Idle && m_State != EPlayerState::Fire))
+		return;
+
+	if (m_Controller == nullptr || m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) || m_EquipWeapon->AmmoFull())
 		return;
 
 	m_State = EPlayerState::Reloading;
 	m_IsAiming = false;
 
-	PlayMontage(m_ReloadAnimMontage, m_EquipWeapon->GetReloadSectionName());
+	if (m_ReloadAnimMontage)
+		PlayMontage(m_ReloadAnimMontage, m_EquipWeapon->GetReloadSectionName());
 }
 
 void APlayerCharacter::ReloadFinish()
@@ -286,6 +300,9 @@ void APlayerCharacter::ReloadFinish()
 
 	if (m_AimingButton)
 		m_IsAiming = true;
+
+	if (m_Controller)
+		m_Controller->ReloadFinish();
 }
 
 void APlayerCharacter::UpdateCameraFOV(float _DeltaTime)
@@ -329,7 +346,7 @@ void APlayerCharacter::UpdateTraceHitResult()
 			m_TraceHitResult,
 			Start,
 			End,
-			ECollisionChannel::ECC_Visibility
+			COLLISION_PLAYERBULLET
 		);
 	}
 }

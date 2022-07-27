@@ -43,12 +43,14 @@ public:
 
 private:
 	void InitAmmo();
-	void FirstHUDUpdate();
+	void UpdateFirstHUD();
 
 public:
 	void AddHP(float _Value);
 	void AddStamina(float _Value);
 	void SubAmmo();
+	void ReloadFinish();
+	bool AmmoMapEmpty(EWeaponType _Type);
 
 public:
 	void UpdateHPHUD();

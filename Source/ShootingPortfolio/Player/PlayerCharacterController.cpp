@@ -26,7 +26,7 @@ void APlayerCharacterController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FirstHUDUpdate();
+	UpdateFirstHUD();
 }
 
 void APlayerCharacterController::InitAmmo()
@@ -34,7 +34,7 @@ void APlayerCharacterController::InitAmmo()
 	m_AmmoMap.Add(EWeaponType::SubmachineGun, m_StartAmmo.SubmachineGun);
 }
 
-void APlayerCharacterController::FirstHUDUpdate()
+void APlayerCharacterController::UpdateFirstHUD()
 {
 	if (m_FirstHUDUpdateComplete || m_HUD->GetPlayerOverlayWidget() == nullptr)
 		return;
@@ -70,8 +70,42 @@ void APlayerCharacterController::SubAmmo()
 	if (Weapon == nullptr)
 		return;
 
-	Weapon->SubAmmo();
+	Weapon->AddAmmo(-1);
 	UpdateAmmoHUD();
+}
+
+void APlayerCharacterController::ReloadFinish()
+{
+	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
+	if (m_Player == nullptr)
+		return;
+
+	AWeapon* Weapon = m_Player->GetEquipWeapon();
+	if (Weapon == nullptr)
+		return;
+
+	int32 WeaponAmmo = Weapon->GetAmmo();
+	int32 WeaponMagazine = Weapon->GetMagazine();
+	int32& AmmoMap = m_AmmoMap[Weapon->GetWeaponType()];
+
+	int32 Ammo = FMath::Clamp(WeaponMagazine - WeaponAmmo, 0, WeaponMagazine);
+	int32 ReloadAmmo = AmmoMap < Ammo ? AmmoMap : Ammo;
+
+	Weapon->AddAmmo(ReloadAmmo);
+	AmmoMap -= ReloadAmmo;
+
+	UpdateAmmoHUD();
+}
+
+bool APlayerCharacterController::AmmoMapEmpty(EWeaponType _Type)
+{
+	if (m_AmmoMap.Contains(_Type) == false)
+		return true;
+
+	if (m_AmmoMap[_Type] == 0)
+		return true;
+
+	return false;
 }
 
 void APlayerCharacterController::UpdateHPHUD()

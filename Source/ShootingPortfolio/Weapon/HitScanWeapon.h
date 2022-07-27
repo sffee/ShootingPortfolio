@@ -21,4 +21,5 @@ public:
 
 private:
 	void PlaySmokeBeamParticle(const FHitResult& _HitResult);
+	void ApplyDamage(const FHitResult& _HitResult);
 };

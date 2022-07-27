@@ -53,6 +53,18 @@ struct FPlayerStatus
 };
 
 USTRUCT(BlueprintType)
+struct FMonsterStatus
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	float CurHP;
+
+	UPROPERTY(EditAnywhere)
+	float MaxHP;
+};
+
+USTRUCT(BlueprintType)
 struct FStartAmmo
 {
 	GENERATED_BODY()

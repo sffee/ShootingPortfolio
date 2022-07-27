@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	EWeaponType m_Type;
 
+	UPROPERTY(EditAnywhere)
+	int32 m_Damage;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = Ammo)
 	int32 m_Ammo;
@@ -74,7 +77,7 @@ public:
 
 public:
 	virtual void Fire(const FHitResult& _HitResult);
-	void SubAmmo();
+	void AddAmmo(int32 _Ammo);
 
 protected:
 	void PlaySound(USoundCue* _Sound);
@@ -94,5 +97,8 @@ public:
 	FORCEINLINE FString GetWeaponName() const { return m_Name; }
 	FORCEINLINE int32 GetAmmo() const { return m_Ammo; }
 	FORCEINLINE int32 GetMagazine() const { return m_Magazine; }
+
+public:
 	FORCEINLINE bool AmmoEmpty() const { return m_Ammo == 0; }
+	FORCEINLINE bool AmmoFull() const { return m_Magazine <= m_Ammo; }
 };

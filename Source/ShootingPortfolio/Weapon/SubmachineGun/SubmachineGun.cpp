@@ -26,4 +26,5 @@ ASubmachineGun::ASubmachineGun()
 	m_ReloadSectionName = "Reload SMG";
 	m_Type = EWeaponType::SubmachineGun;
 	m_Name = "Submachine Gun";
+	m_Damage = 10;
 }

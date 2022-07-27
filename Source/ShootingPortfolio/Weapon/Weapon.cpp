@@ -9,6 +9,7 @@ AWeapon::AWeapon()
 	, m_IsAutoFire(true)
 	, m_AutoFireDelay(0.1f)
 	, m_Type(EWeaponType::MAX)
+	, m_Damage(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -36,9 +37,9 @@ void AWeapon::Fire(const FHitResult& _HitResult)
 	PlayHitParticle(_HitResult);
 }
 
-void AWeapon::SubAmmo()
+void AWeapon::AddAmmo(int32 _Ammo)
 {
-	m_Ammo--;
+	m_Ammo += _Ammo;
 }
 
 void AWeapon::PlaySound(USoundCue* _Sound)

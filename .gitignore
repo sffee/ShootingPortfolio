@@ -6,3 +6,5 @@
 /Intermediate
 *.sln
 *_BuiltData.uasset
+*.csv
+bfg.jar

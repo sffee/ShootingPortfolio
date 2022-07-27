@@ -49,6 +49,7 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	m_AOPitch = m_Player->GetAOPitch();
 
 	EPlayerState PlayerState = m_Player->GetState();
+
 	m_UseAimOffset = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Fire;
 	m_UseFABRIK = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Fire;
 }
