@@ -50,8 +50,8 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	EPlayerState PlayerState = m_Player->GetState();
 
-	m_UseAimOffset = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Fire;
-	m_UseFABRIK = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Fire;
+	m_UseAimOffset = PlayerState == EPlayerState::Idle;
+	m_UseFABRIK = PlayerState == EPlayerState::Idle;
 }
 
 void UPlayerCharacterAnimInstance::CalcYaw(float _DeltaTime)

@@ -10,7 +10,7 @@ class SHOOTINGPORTFOLIO_API AHitScanWeapon : public AWeapon
 	GENERATED_BODY()
 	
 protected:
-	UPROPERTY(EditAnywhere, Category = Effect)
+	UPROPERTY(EditAnywhere, Category = Particle)
 	UParticleSystem* m_SmokeBeamParticle;
 	
 public:

@@ -3,6 +3,7 @@
 #include "PlayerCharacterController.h"
 #include "ShootingPortfolio/Weapon/Weapon.h"
 #include "ShootingPortfolio/UI/ShootingHUD.h"
+#include "ShootingPortfolio/Monster/Monster.h"
 
 APlayerCharacter::APlayerCharacter()
 	: m_TurnRate(45.f)
@@ -15,6 +16,8 @@ APlayerCharacter::APlayerCharacter()
 	, m_DefaultCameraFOV(0.f)
 	, m_CurCameraFOV(0.f)
 	, m_ZoomReleaseSpeed(20.f)
+	, m_CanDamage(true)
+	, m_CanDamageTimeRate(0.8f)
 	, m_AimingButton(false)
 	, m_IsAiming(false)
 	, m_FireButtonPress(false)
@@ -42,6 +45,8 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
+
 	m_CameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	m_CameraArm->SetupAttachment(RootComponent);
 	m_CameraArm->TargetArmLength = 300.f;
@@ -56,18 +61,24 @@ APlayerCharacter::APlayerCharacter()
 	if (DefaultWeapon.Succeeded())
 		m_DefaultWeapon = DefaultWeapon.Class;
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireAnimMontage(TEXT("AnimMontage'/Game/Game/Asset/Animation/Player/FireMontage.FireMontage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/FireMontage.FireMontage'"));
 	if (FireAnimMontage.Succeeded())
 		m_FireAnimMontage = FireAnimMontage.Object;
 
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ReloadAnimMontage(TEXT("AnimMontage'/Game/Game/Asset/Animation/Player/ReloadMontage.ReloadMontage'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ReloadAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/ReloadMontage.ReloadMontage'"));
 	if (ReloadAnimMontage.Succeeded())
 		m_ReloadAnimMontage = ReloadAnimMontage.Object;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DamageAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/DamageMontage.DamageMontage'"));
+	if (DamageAnimMontage.Succeeded())
+		m_DamageAnimMontage = DamageAnimMontage.Object;
 }
 
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnTakeAnyDamage.AddDynamic(this, &APlayerCharacter::ReceiveDamage);
 	
 	APlayerCameraManager* CameraManager = Cast<APlayerCharacterController>(Controller)->PlayerCameraManager;
 	if (CameraManager)
@@ -259,8 +270,6 @@ void APlayerCharacter::Fire()
 	if (m_FireAnimMontage)
 		PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
 
-	m_State = EPlayerState::Fire;
-
 	if (m_EquipWeapon->IsAutoFire())
 		GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
 
@@ -281,7 +290,7 @@ void APlayerCharacter::FireTimerEnd()
 
 void APlayerCharacter::Reloading()
 {
-	if (m_EquipWeapon == nullptr || (m_State != EPlayerState::Idle && m_State != EPlayerState::Fire))
+	if (m_EquipWeapon == nullptr || m_State != EPlayerState::Idle)
 		return;
 
 	if (m_Controller == nullptr || m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) || m_EquipWeapon->AmmoFull())
@@ -294,6 +303,11 @@ void APlayerCharacter::Reloading()
 		PlayMontage(m_ReloadAnimMontage, m_EquipWeapon->GetReloadSectionName());
 }
 
+void APlayerCharacter::DamageTimerEnd()
+{
+	m_CanDamage = true;
+}
+
 void APlayerCharacter::ReloadFinish()
 {
 	m_State = EPlayerState::Idle;
@@ -303,6 +317,9 @@ void APlayerCharacter::ReloadFinish()
 
 	if (m_Controller)
 		m_Controller->ReloadFinish();
+
+	if (m_FireButtonPress)
+		Fire();
 }
 
 void APlayerCharacter::UpdateCameraFOV(float _DeltaTime)
@@ -443,5 +460,40 @@ void APlayerCharacter::PlayMontage(UAnimMontage* _AnimMontage, FName _SectionNam
 	{
 		AnimInst->Montage_Play(_AnimMontage);
 		AnimInst->Montage_JumpToSection(_SectionName);
+	}
+}
+
+void APlayerCharacter::PlayHitParticle(AActor* _Actor)
+{
+	AMonster* Monster = Cast<AMonster>(_Actor);
+	if (Monster == nullptr)
+		return;
+
+	UParticleSystem* HitParticle = Monster->GetHitParticle();
+	if (HitParticle == nullptr)
+		return;
+
+	const USkeletalMeshSocket* ImpactSocket = GetMesh()->GetSocketByName(TEXT("Impact"));
+	if (ImpactSocket)
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, ImpactSocket->GetSocketTransform(GetMesh()));
+}
+
+void APlayerCharacter::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
+{
+	if (m_CanDamage == false)
+		return;
+
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller == nullptr)
+		return;
+
+	m_Controller->AddHP(-_Damage);
+
+	if (m_DamageAnimMontage)
+	{
+		m_CanDamage = false;
+		GetWorldTimerManager().SetTimer(m_DamageTimer, this, &APlayerCharacter::DamageTimerEnd, m_CanDamageTimeRate);
+		PlayMontage(m_DamageAnimMontage, TEXT("Damage"));
+		PlayHitParticle(_DamageCauser);
 	}
 }

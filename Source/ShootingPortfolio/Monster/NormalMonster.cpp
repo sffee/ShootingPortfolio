@@ -38,5 +38,11 @@ void ANormalMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const U
 {
 	Super::ReceiveDamage(_DamagedActor, _Damage, _DamageType, _InstigatorController, _DamageCauser);
 
+	if (m_Status.CurHP <= 0.f)
+	{
+		Destroy();
+		return;
+	}
+
 	UpdateHPBarWidget();
 }

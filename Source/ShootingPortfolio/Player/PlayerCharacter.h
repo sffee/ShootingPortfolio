@@ -58,6 +58,18 @@ private:
 	float m_ZoomReleaseSpeed;
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = Damage)
+	bool m_CanDamage;
+
+	UPROPERTY(EditAnywhere, Category = Damage, meta = (AllowPrivateAccess = "true"))
+	float m_CanDamageTimeRate;
+
+	UPROPERTY(VisibleAnywhere, Category = Damage)
+	UAnimMontage* m_DamageAnimMontage;
+
+	FTimerHandle m_DamageTimer;
+
+private:
 	UPROPERTY(EditAnywhere, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> m_DefaultWeapon;
 
@@ -69,7 +81,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	UAnimMontage* m_ReloadAnimMontage;
-	
+
 	FHitResult m_TraceHitResult;
 
 	FTimerHandle m_AutoFireTimer;
@@ -130,6 +142,8 @@ private:
 
 	void Reloading();
 
+	void DamageTimerEnd();
+
 public:
 	void ReloadFinish();
 
@@ -144,6 +158,11 @@ private:
 
 public:
 	void PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName);
+	void PlayHitParticle(AActor* _Actor);
+
+public:
+	UFUNCTION()
+	virtual void ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser);
 
 public:
 	FORCEINLINE void SetState(EPlayerState _State) { m_State = _State; }

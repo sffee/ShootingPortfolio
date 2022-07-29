@@ -18,6 +18,10 @@ protected:
 	UPROPERTY()
 	UMonsterHPBarWidget* m_HPBarWidget;
 
+protected:
+	UPROPERTY(EditAnywhere, Category = Particle)
+	UParticleSystem* m_DeathParticle;
+
 public:
 	ANormalMonster();
 

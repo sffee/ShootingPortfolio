@@ -14,12 +14,6 @@ class SHOOTINGPORTFOLIO_API UPlayerCharacterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	
-public:
-	UPlayerCharacterAnimInstance();
-
-	virtual void NativeInitializeAnimation() override;
-	virtual void NativeUpdateAnimation(float DeltaTime) override;
-	
 private:
 	UPROPERTY()
 	APlayerCharacter* m_Player;
@@ -68,6 +62,12 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool m_UseFABRIK;
+
+public:
+	UPlayerCharacterAnimInstance();
+
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
 private:
 	void CalcYaw(float _DeltaTime);
