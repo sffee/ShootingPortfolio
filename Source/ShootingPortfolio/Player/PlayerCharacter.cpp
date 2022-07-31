@@ -489,11 +489,10 @@ void APlayerCharacter::ReceiveDamage(AActor* _DamagedActor, float _Damage, const
 
 	m_Controller->AddHP(-_Damage);
 
-	if (m_DamageAnimMontage)
-	{
-		m_CanDamage = false;
-		GetWorldTimerManager().SetTimer(m_DamageTimer, this, &APlayerCharacter::DamageTimerEnd, m_CanDamageTimeRate);
+	m_CanDamage = false;
+	GetWorldTimerManager().SetTimer(m_DamageTimer, this, &APlayerCharacter::DamageTimerEnd, m_CanDamageTimeRate);
+	PlayHitParticle(_DamageCauser);
+
+	if (m_DamageAnimMontage && m_State != EPlayerState::Reloading)
 		PlayMontage(m_DamageAnimMontage, TEXT("Damage"));
-		PlayHitParticle(_DamageCauser);
-	}
 }

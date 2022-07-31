@@ -77,3 +77,27 @@ struct FStartAmmo
 	{
 	}
 };
+
+USTRUCT(BlueprintType)
+struct FMonsterSpawnData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AMonster> SpawnMonster;
+
+	UPROPERTY(EditAnywhere)
+	int32 SpawnCount;
+
+	UPROPERTY(EditAnywhere)
+	float SpawnDelay;
+};
+
+USTRUCT(BlueprintType)
+struct FMonsterWave : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TArray<FMonsterSpawnData> MonsterSpawnData;
+};

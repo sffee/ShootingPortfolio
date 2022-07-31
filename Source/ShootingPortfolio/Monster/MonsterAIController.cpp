@@ -11,12 +11,6 @@ AMonsterAIController::AMonsterAIController()
 void AMonsterAIController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (Blackboard)
-	{
-		APlayerCharacter* Player = Cast<APlayerCharacter>((UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
-		Blackboard->SetValueAsObject(TEXT("Target"), Player);
-	}
 }
 
 void AMonsterAIController::OnPossess(APawn* _Monster)
@@ -34,5 +28,9 @@ void AMonsterAIController::OnPossess(APawn* _Monster)
 
 		if (m_BehaviorTree)
 			RunBehaviorTree(m_BehaviorTree);
+
+		APlayerCharacter* Player = Cast<APlayerCharacter>((UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
+		if (Player)
+			Blackboard->SetValueAsObject(TEXT("Target"), Player);
 	}
 }

@@ -43,6 +43,14 @@ void ANormalMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const U
 		Destroy();
 		return;
 	}
-
+	
 	UpdateHPBarWidget();
+}
+
+void ANormalMonster::Destroyed()
+{
+	Super::Destroyed();
+
+	if (m_MonsterDieDelegate.IsBound())
+		m_MonsterDieDelegate.Execute(this->GetClass()->GetDefaultObject());
 }

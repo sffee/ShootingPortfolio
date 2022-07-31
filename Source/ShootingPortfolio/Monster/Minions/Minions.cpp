@@ -31,7 +31,7 @@ AMinions::AMinions()
 	if (m_HPBarWidgetComponent)
 		m_HPBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 180.f));
 
-	m_Status.MaxHP = 100;
+	m_Status.MaxHP = 30;
 
 	m_AttackSectionNameList.Add(FName("Attack"));
 }
@@ -39,8 +39,6 @@ AMinions::AMinions()
 void AMinions::BeginPlay()
 {
 	Super::BeginPlay();
-
-
 }
 
 void AMinions::Destroyed()

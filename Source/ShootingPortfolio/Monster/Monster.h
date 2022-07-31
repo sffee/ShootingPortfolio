@@ -10,11 +10,16 @@
 #include "GameFramework/Character.h"
 #include "Monster.generated.h"
 
+DECLARE_DELEGATE_OneParam(FSpawnMonsterDieDelegate, UObject*)
+
 UCLASS()
 class SHOOTINGPORTFOLIO_API AMonster : public ACharacter
 {
 	GENERATED_BODY()
 	
+public:
+	FSpawnMonsterDieDelegate m_MonsterDieDelegate;
+
 protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* m_RightWeaponCollision;
