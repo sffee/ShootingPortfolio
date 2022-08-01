@@ -23,6 +23,7 @@ AMonster::AMonster()
 		m_Blackboard = Blackboard.Object;
 
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Monster"));
+	GetMesh()->SetCollisionProfileName(FName("Monster"));
 }
 
 void AMonster::BeginPlay()
@@ -69,6 +70,8 @@ void AMonster::PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName)
 void AMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
 {
 	m_Status.CurHP -= _Damage;
+
+
 }
 
 void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)

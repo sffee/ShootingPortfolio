@@ -25,8 +25,11 @@ AMinions::AMinions()
 	if (HitParticle.Succeeded())
 		m_HitParticle = HitParticle.Object;
 
-	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -88.f));
+	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -74.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
+
+	GetCapsuleComponent()->SetCapsuleHalfHeight(70.f);
+	GetCapsuleComponent()->SetCapsuleRadius(38.f);
 
 	if (m_HPBarWidgetComponent)
 		m_HPBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 180.f));

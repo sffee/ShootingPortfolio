@@ -20,6 +20,7 @@ class SHOOTINGPORTFOLIO_API APlayerCharacterController : public APlayerControlle
 	
 private:
 	APlayerCharacter* m_Player;
+	AWeapon* m_EquipWeapon;
 	AShootingHUD* m_HUD;
 
 private:
@@ -33,6 +34,8 @@ private:
 	FStartAmmo m_StartAmmo;
 
 	bool m_FirstHUDUpdateComplete;
+
+	FHitResult m_TraceHitResult;
 
 private:
 	APlayerCharacterController();

@@ -23,7 +23,9 @@ APlayerCharacter::APlayerCharacter()
 	, m_FireButtonPress(false)
 	, m_CrosshairAimingValue(0.f)
 	, m_CrosshairRecoilValue(0.f)
+	, m_CrosshairRecoilMaxValue(3.75f)
 	, m_CrosshairSpreadMultiple(16.f)
+	, m_CrosshairSpread(0.f)
 	, m_TurnState(ETurnState::None)
 	, m_AOYaw(0.f)
 	, m_AOPitch(0.f)
@@ -57,7 +59,7 @@ APlayerCharacter::APlayerCharacter()
 	m_FollowCamera->SetupAttachment(m_CameraArm);
 	m_FollowCamera->bUsePawnControlRotation = false;
 
-	static ConstructorHelpers::FClassFinder<AWeapon> DefaultWeapon(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun.SubmachineGun_C'"));
+	static ConstructorHelpers::FClassFinder<AWeapon> DefaultWeapon(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/SubmachineGun.SubmachineGun_C'"));
 	if (DefaultWeapon.Succeeded())
 		m_DefaultWeapon = DefaultWeapon.Class;
 
@@ -108,9 +110,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UpdateCameraFOV(DeltaTime);
-	UpdateTraceHitResult();
 	UpdateCrosshairHUD(DeltaTime);
 	UpdateAimOffset(DeltaTime);
+	UpdateTraceHitResult();
+	UpdateCrosshairColor();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -264,8 +267,8 @@ void APlayerCharacter::Fire()
 		return;
 	}
 
-	m_CrosshairRecoilValue = m_EquipWeapon->GetCrosshairRecoil();
-	m_EquipWeapon->Fire(m_TraceHitResult);
+	m_CrosshairRecoilValue = FMath::Min(m_CrosshairRecoilValue + m_EquipWeapon->GetCrosshairRecoil(), m_CrosshairRecoilMaxValue);
+	m_EquipWeapon->Fire(m_CrosshairSpread, m_TraceHitResult);
 
 	if (m_FireAnimMontage)
 		PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
@@ -273,6 +276,7 @@ void APlayerCharacter::Fire()
 	if (m_EquipWeapon->IsAutoFire())
 		GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
 
+	return;
 	if (m_Controller)
 		m_Controller->SubAmmo();
 }
@@ -334,40 +338,6 @@ void APlayerCharacter::UpdateCameraFOV(float _DeltaTime)
 	m_FollowCamera->FieldOfView = m_CurCameraFOV;
 }
 
-void APlayerCharacter::UpdateTraceHitResult()
-{
-	FVector2D ViewportSize;
-	if (GEngine && GEngine->GameViewport)
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
-
-	FVector2D CrosshairLocation(ViewportSize.X * 0.5f, ViewportSize.Y * 0.5f);
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-	
-	bool ScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
-		UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection
-	);
-
-	if (ScreenToWorld)
-	{
-		FVector Start = CrosshairWorldPosition;
-		float DistanceToCharacter = (GetActorLocation() - Start).Size();
-		Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
-
-		FVector End = Start + CrosshairWorldDirection * 80000.f;
-
-		GetWorld()->LineTraceSingleByChannel(
-			m_TraceHitResult,
-			Start,
-			End,
-			COLLISION_PLAYERBULLET
-		);
-	}
-}
-
 void APlayerCharacter::UpdateCrosshairHUD(float _DeltaTime)
 {
 	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
@@ -379,18 +349,18 @@ void APlayerCharacter::UpdateCrosshairHUD(float _DeltaTime)
 		return;
 
 	FVector2D WalkSpeedRange(0.f, GetCharacterMovement()->MaxWalkSpeed);
-	FVector2D VelocityMultiplierRange(0.f, 1.f);
+	FVector2D VelocityMultiplierRange(0.f, 0.3f);
 	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 	
 	float CrosshairMoveValue = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
-	m_CrosshairAimingValue = m_AimingButton ? FMath::FInterpTo(m_CrosshairAimingValue, 0.5f, _DeltaTime, 30.f) : FMath::FInterpTo(m_CrosshairAimingValue, 0.f, _DeltaTime, 30.f);
-	m_CrosshairRecoilValue = FMath::FInterpTo(m_CrosshairRecoilValue, 0.f, _DeltaTime, 40.f);
+	m_CrosshairAimingValue = m_IsAiming ? FMath::FInterpTo(m_CrosshairAimingValue, 0.5f, _DeltaTime, 30.f) : FMath::FInterpTo(m_CrosshairAimingValue, 0.f, _DeltaTime, 30.f);
+	m_CrosshairRecoilValue = FMath::FInterpTo(m_CrosshairRecoilValue, 0.f, _DeltaTime, 10.f);
 	
 	float CrosshairSpread =	0.5f + CrosshairMoveValue -	m_CrosshairAimingValue + m_CrosshairRecoilValue;
-	CrosshairSpread *= m_CrosshairSpreadMultiple;
+	m_CrosshairSpread = CrosshairSpread * m_CrosshairSpreadMultiple;
 
-	m_HUD->SetCrosshairSpread(CrosshairSpread);
+	m_HUD->SetCrosshairSpread(m_CrosshairSpread);
 }
 
 void APlayerCharacter::UpdateAimOffset(float _DeltaTime)
@@ -430,6 +400,61 @@ void APlayerCharacter::UpdateAimOffset(float _DeltaTime)
 		FVector2D OutRange(-90.f, 0.f);
 		m_AOPitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, m_AOPitch);
 	}
+}
+
+void APlayerCharacter::UpdateTraceHitResult()
+{
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller == nullptr || m_EquipWeapon == nullptr)
+		return;
+
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+
+	FVector2D CrosshairLocation(ViewportSize.X * 0.5f, ViewportSize.Y * 0.5f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool ScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		m_Controller,
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
+
+	if (ScreenToWorld)
+	{
+		float DistanceToCharacter = (GetActorLocation() - CrosshairWorldPosition).Size();
+		FVector Start = CrosshairWorldPosition + CrosshairWorldDirection * DistanceToCharacter;
+
+		FVector End = Start + CrosshairWorldDirection * m_EquipWeapon->GetRange();
+
+		GetWorld()->LineTraceSingleByChannel(
+			m_TraceHitResult,
+			Start,
+			End,
+			COLLISION_PLAYERBULLET
+		);
+	}
+}
+
+void APlayerCharacter::UpdateCrosshairColor()
+{
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(m_Controller->GetHUD()) : m_HUD;
+	if (m_HUD == nullptr)
+		return;
+
+	FLinearColor CrosshairColor = FLinearColor::White;
+	if (m_TraceHitResult.bBlockingHit)
+	{
+		AMonster* Monster = Cast<AMonster>(m_TraceHitResult.Actor);
+		if (Monster)
+			CrosshairColor = FLinearColor::Red;
+	}
+
+	if (m_HUD)
+		m_HUD->SetCrosshairColor(CrosshairColor);
 }
 
 void APlayerCharacter::TurnInPlace(float _DeltaTime)

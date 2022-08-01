@@ -82,9 +82,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	UAnimMontage* m_ReloadAnimMontage;
 
-	FHitResult m_TraceHitResult;
-
 	FTimerHandle m_AutoFireTimer;
+	FHitResult m_TraceHitResult;
 
 private:
 	bool m_AimingButton;
@@ -95,7 +94,10 @@ private:
 private:
 	float m_CrosshairAimingValue;
 	float m_CrosshairRecoilValue;
+	float m_CrosshairRecoilMaxValue;
 	float m_CrosshairSpreadMultiple;
+
+	float m_CrosshairSpread;
 
 private:
 	ETurnState m_TurnState;
@@ -149,9 +151,10 @@ public:
 
 private:
 	void UpdateCameraFOV(float _DeltaTime);
-	void UpdateTraceHitResult();
 	void UpdateCrosshairHUD(float _DeltaTime);
 	void UpdateAimOffset(float _DeltaTime);
+	void UpdateTraceHitResult();
+	void UpdateCrosshairColor();
 
 private:
 	void TurnInPlace(float _DeltaTime);
@@ -170,11 +173,11 @@ public:
 public:
 	FORCEINLINE bool IsAiming() const { return m_IsAiming; }
 	FORCEINLINE UAnimMontage* GetFireAnimMontage() const { return m_FireAnimMontage; }
-	FORCEINLINE const FHitResult& GetTraceHitResult() const { return m_TraceHitResult; }
 	FORCEINLINE EPlayerState GetState() const { return m_State; }
 	FORCEINLINE AWeapon* GetEquipWeapon() const { return m_EquipWeapon; }
 	FORCEINLINE ETurnState GetTurnState() const { return m_TurnState; }
 	FORCEINLINE bool GetUseRotationRootBone() const { return m_UseRotationRootBone; }
 	FORCEINLINE float GetAOYaw() const { return m_AOYaw; }
 	FORCEINLINE float GetAOPitch() const { return m_AOPitch; }
+	FORCEINLINE const FHitResult& GetTraceHitResult() const { return m_TraceHitResult; }
 };

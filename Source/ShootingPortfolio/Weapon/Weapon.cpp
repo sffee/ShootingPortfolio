@@ -1,5 +1,8 @@
 #include "Weapon.h"
 
+#include "ShootingPortfolio/Player/PlayerCharacter.h"
+#include "ShootingPortfolio/UI/DamageText/DamageTextActor.h"
+
 AWeapon::AWeapon()
 	: m_Ammo(0)
 	, m_Magazine(0)
@@ -10,12 +13,16 @@ AWeapon::AWeapon()
 	, m_AutoFireDelay(0.1f)
 	, m_Type(EWeaponType::MAX)
 	, m_Damage(0)
+	, m_HeadDamageRate(1.5f)
+	, m_Range(1000.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	m_Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	SetRootComponent(m_Mesh);
 	m_Mesh->SetEnableGravity(false);
+
+	m_Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AWeapon::BeginPlay()
@@ -27,19 +34,37 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void AWeapon::Fire(const FHitResult& _HitResult)
+void AWeapon::Fire(float _Spread, const FHitResult& _TargetHitResult)
 {
 	PlaySound(m_FireSound);
 	PlayMuzzleFlashParticle();
-	PlayHitParticle(_HitResult);
+	PlayCameraShake();
 }
 
 void AWeapon::AddAmmo(int32 _Ammo)
 {
 	m_Ammo += _Ammo;
+}
+
+void AWeapon::SpawnDamageText(const FHitResult& _HitResult, float _Damage,  bool _IsHeadShot)
+{
+	FLinearColor TextColor = FLinearColor::White;
+	if (_IsHeadShot)
+	{
+		FLinearColor OrangeColor = FLinearColor(1.f, 0.647, 0.f, 1.f);
+		TextColor = OrangeColor;
+	}
+	
+	float RandX = FMath::FRandRange(-30.f, 30.f);
+	float RandY = FMath::FRandRange(-30.f, 30.f);
+
+	FVector SpawnLocation = _HitResult.ImpactPoint + FVector(RandX, RandY, 0.f);
+
+	ADamageTextActor* DamageTextActor = GetWorld()->SpawnActor<ADamageTextActor>(ADamageTextActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
+	if (DamageTextActor)
+		DamageTextActor->SetData((int32)_Damage, TextColor);
 }
 
 void AWeapon::PlaySound(USoundCue* _Sound)
@@ -60,10 +85,26 @@ void AWeapon::PlayMuzzleFlashParticle()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_MuzzleFlashParticle, BarrelSocket->GetSocketTransform(m_Mesh));
 }
 
-void AWeapon::PlayHitParticle(const FHitResult& _HitResult)
+void AWeapon::PlayCameraShake()
 {
-	if (m_HitParticle == nullptr || !_HitResult.bBlockingHit)
+	if (m_FireCameraShake == nullptr)
 		return;
 
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_HitParticle, _HitResult.ImpactPoint);
+	APlayerCharacter* Player = Cast<APlayerCharacter>(GetOwner());
+	if (Player == nullptr)
+		return;
+	
+	APlayerController* Controller = Cast<APlayerController>(Player->GetController());
+	if (Controller == nullptr)
+		return;
+
+	Controller->ClientStartCameraShake(m_FireCameraShake);
+}
+
+void AWeapon::PlayHitParticle(const FVector& _Location)
+{
+	if (m_HitParticle == nullptr)
+		return;
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_HitParticle, _Location);
 }

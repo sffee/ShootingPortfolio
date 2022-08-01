@@ -18,6 +18,10 @@ ASubmachineGun::ASubmachineGun()
 	if (HitParticle.Succeeded())
 		m_HitParticle = HitParticle.Object;
 
+	static ConstructorHelpers::FClassFinder<UCameraShakeBase> FireCameraShake(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/CameraShake_SubmachineGun.CameraShake_SubmachineGun_C'"));
+	if (FireCameraShake.Succeeded())
+		m_FireCameraShake = FireCameraShake.Class;
+
 	m_Ammo = 30;
 	m_Magazine = 30;
 	m_CrosshairType = "Cross";
@@ -27,4 +31,6 @@ ASubmachineGun::ASubmachineGun()
 	m_Type = EWeaponType::SubmachineGun;
 	m_Name = "Submachine Gun";
 	m_Damage = 10;
+	m_HeadDamageRate = 1.5f;
+	m_Range = 1000.f;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EngineMinimal.h>
+#include "DrawDebugHelpers.h"
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include <Engine/DataTable.h>

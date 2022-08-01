@@ -4,6 +4,7 @@
 #include "ShootingPortfolio/Weapon/Weapon.h"
 #include "ShootingPortfolio/UI/ShootingHUD.h"
 #include "ShootingPortfolio/Weapon/Weapon.h"
+#include "ShootingPortfolio/Monster/Monster.h"
 
 APlayerCharacterController::APlayerCharacterController()
 	: m_FirstHUDUpdateComplete(false)

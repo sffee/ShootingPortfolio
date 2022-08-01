@@ -12,14 +12,19 @@ class SHOOTINGPORTFOLIO_API AHitScanWeapon : public AWeapon
 protected:
 	UPROPERTY(EditAnywhere, Category = Particle)
 	UParticleSystem* m_SmokeBeamParticle;
+
+	FHitResult m_HitResult;
 	
 public:
 	AHitScanWeapon();
 
 public:
-	virtual void Fire(const FHitResult& _HitResult) override;
+	virtual void Fire(float _Spread, const FHitResult& _TargetHitResult) override;
 
 private:
-	void PlaySmokeBeamParticle(const FHitResult& _HitResult);
-	void ApplyDamage(const FHitResult& _HitResult);
+	void CalcHitResult(float _Spread, const FHitResult& _TargetHitResult);
+
+private:
+	void PlaySmokeBeamParticle();
+	void ApplyDamage();
 };
