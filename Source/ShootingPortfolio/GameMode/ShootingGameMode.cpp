@@ -4,6 +4,7 @@
 #include "ShootingPortfolio/UI/ShootingHUD.h"
 #include "ShootingPortfolio/SpawnPoint/MonsterSpawnPoint.h"
 #include "ShootingPortfolio/Monster/Monster.h"
+#include "Components/TextBlock.h"
 
 AShootingGameMode::AShootingGameMode()
 	: m_Wave(1)
@@ -14,6 +15,7 @@ AShootingGameMode::AShootingGameMode()
 	, m_NeedSpawnMonsterCount(0)
 	, m_AliveMonsterCount(0)
 	, m_SpawnComplete(false)
+	, m_WaveState(EWaveState::Countdown)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -37,13 +39,13 @@ void AShootingGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	InitSpawnPointMap();
-	
-	SpawnStart();
+
+	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
 }
 
-void AShootingGameMode::Tick(float _DeltaTime)
+void AShootingGameMode::Tick(float DeltaTime)
 {
-	Super::Tick(_DeltaTime);
+	Super::Tick(DeltaTime);
 
 	FString Str = FString::Printf(TEXT("Monster : %d"), m_AliveMonsterCount);
 	GEngine->AddOnScreenDebugMessage(0, 999.f, FColor::Blue, *Str);
@@ -52,6 +54,29 @@ void AShootingGameMode::Tick(float _DeltaTime)
 	{
 		GEngine->AddOnScreenDebugMessage(1, 999.f, FColor::Blue, TEXT("Spawn Complete"));
 	}
+}
+
+void AShootingGameMode::GameStartTimerEnd()
+{
+	StartWaveCountdown();
+}
+
+void AShootingGameMode::StartWaveCountdown()
+{
+	APlayerCharacterController* PlayerController = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PlayerController == nullptr)
+		return;
+
+	PlayerController->SetWaveState(EWaveState::Countdown);
+}
+
+void AShootingGameMode::StartWaveComplete()
+{
+	APlayerCharacterController* PlayerController = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PlayerController == nullptr)
+		return;
+
+	PlayerController->SetWaveState(EWaveState::Complete);
 }
 
 void AShootingGameMode::InitSpawnPointMap()
@@ -91,7 +116,7 @@ void AShootingGameMode::SpawnStart()
 {
 	ResetData();
 
-	FString WaveString = FString::Printf(TEXT("Wave%d"), m_Wave++);
+	FString WaveString = FString::Printf(TEXT("Wave%d"), m_Wave);
 
 	FMonsterWave* MonsterWaveData = m_WaveDataTable->FindRow<FMonsterWave>(FName(WaveString), TEXT(""));
 	if (MonsterWaveData == nullptr || MonsterWaveData->MonsterSpawnData.Num() == 0)
@@ -117,13 +142,13 @@ void AShootingGameMode::SpawnStart()
 		{
 			m_NeedSpawnMonsterCount += m_SpawnDatas[i].SpawnCount;
 
-			FTimerDelegate SpawnDelegate = FTimerDelegate::CreateUObject(this, &AShootingGameMode::SpawnMonster, m_SpawnDatas[i].SpawnMonster, i);
+			FTimerDelegate SpawnDelegate = FTimerDelegate::CreateUObject(this, &AShootingGameMode::SpawnMonsterProcess, m_SpawnDatas[i].SpawnMonster, i);
 			GetWorldTimerManager().SetTimer(m_SpawnTimers[i], SpawnDelegate, m_SpawnDatas[i].SpawnDelay, true);
 		}
 	}
 }
 
-void AShootingGameMode::SpawnMonster(TSubclassOf<AMonster> _Monster, int32 _Index)
+void AShootingGameMode::SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int32 _Index)
 {
 	if (_Monster == nullptr || m_SpawnDatas[_Index].SpawnCount <= m_SpawnCountMap[_Monster->GetDefaultObject()])
 	{
@@ -179,4 +204,10 @@ void AShootingGameMode::Delegate_MonsterDie(UObject* _Monster)
 
 	m_AliveMonsterMap[_Monster]--;
 	m_AliveMonsterCount--;
+
+	if (m_SpawnComplete && m_AliveMonsterCount <= 0)
+	{
+		m_Wave++;
+		StartWaveComplete();
+	}
 }

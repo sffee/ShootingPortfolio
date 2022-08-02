@@ -21,10 +21,15 @@ struct FMonsterSpawnPointData
 	FVector Scale;
 };
 
+class UPlayerOverlayWidget;
+
 UCLASS()
 class SHOOTINGPORTFOLIO_API AShootingGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+	
+private:
+	UPlayerOverlayWidget* m_PlayerOverlayWidget;
 	
 private:
 	UPROPERTY(EditAnywhere)
@@ -53,7 +58,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Wave)
 	bool m_SpawnComplete;
-	
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Wave | Countdown")
+	EWaveState m_WaveState;
+
 private:
 	TMap<int32, FMonsterSpawnPointData> m_SpawnPointMap;
 
@@ -61,23 +70,41 @@ private:
 	TArray<FMonsterSpawnData> m_SpawnDatas;
 	TMap<UObject*, int32> m_SpawnCountMap;
 	TMap<UObject*, int32> m_AliveMonsterMap;
+
+private:
+	FTimerHandle m_GameStartTimer;
 	
 public:
 	AShootingGameMode();
 
 public:
 	virtual void BeginPlay() override;
-	virtual void Tick(float _DeltaTime) override;
+	virtual void Tick(float DeltaTime) override;
+
+private:
+	void GameStartTimerEnd();
+
+private:
+	void StartWaveCountdown();
+	void StartWaveComplete();
 
 private:
 	void InitSpawnPointMap();
 	void ResetData();
 
-private:
+public:
 	void SpawnStart();
-	void SpawnMonster(TSubclassOf<AMonster> _Monster, int32 _Index);
+
+private:
+	void SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int32 _Index);
 	void SpawnMonster(TSubclassOf<AMonster> _Monster, const FMonsterSpawnPointData& _SpawnPointData);
 
 private:
 	void Delegate_MonsterDie(UObject* _Monster);
+
+public:
+	FORCEINLINE void SetWaveState(EWaveState _State) { m_WaveState = _State; }
+
+public:
+	FORCEINLINE int32 GetWaveNumber() const { return m_Wave; }
 };

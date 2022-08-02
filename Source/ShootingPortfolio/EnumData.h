@@ -34,3 +34,14 @@ enum class EWeaponType : uint8
 
 	MAX
 };
+
+UENUM(BlueprintType)
+enum class EWaveState : uint8
+{
+	Countdown,
+	Start,
+	Play,
+	Complete,
+
+	MAX
+};

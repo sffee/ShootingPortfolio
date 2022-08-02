@@ -6,6 +6,7 @@
 
 class UHPStaminaWidget;
 class UAmmoWidget;
+class UTextBlock;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API UPlayerOverlayWidget : public UUserWidget
@@ -18,6 +19,24 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UAmmoWidget* AmmoWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WaveCountdownText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WaveNumberText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WaveStartCompleteText;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* WaveStartAnimation;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* WaveCompleteAnimation;
+
+protected:
+	virtual void NativeConstruct() override;
 
 public:
 	void SetHP(float _CurHP, float _MaxHP);

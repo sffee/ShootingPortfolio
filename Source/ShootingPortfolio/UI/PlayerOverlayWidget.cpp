@@ -5,6 +5,15 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
+void UPlayerOverlayWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	WaveCountdownText->SetVisibility(ESlateVisibility::Hidden);
+	WaveNumberText->SetVisibility(ESlateVisibility::Hidden);
+	WaveStartCompleteText->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void UPlayerOverlayWidget::SetHP(float _CurHP, float _MaxHP)
 {
 	if (HPStaminaWidget == nullptr)

@@ -7,11 +7,14 @@
 #include "ShootingHUD.generated.h"
 
 class UPlayerOverlayWidget;
+class APlayerCharacterController;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API AShootingHUD : public AHUD
 {
 	GENERATED_BODY()
+	
+	friend APlayerCharacterController;
 	
 private:
 	TSubclassOf<UUserWidget> m_PlayerOverlayWidgetClass;

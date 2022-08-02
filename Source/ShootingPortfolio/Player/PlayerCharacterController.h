@@ -24,6 +24,17 @@ private:
 	AShootingHUD* m_HUD;
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = "Wave")
+	EWaveState m_WaveState;
+	
+	UPROPERTY(EditAnywhere, Category = "Wave")
+	float m_StartWaveCountTime;
+
+	UPROPERTY(VisibleAnywhere, Category = "Wave")
+	float m_RemainingWaveCountTime;
+	int32 m_PrevReminingWaveCountTime;
+
+private:
 	UPROPERTY(EditAnywhere, Category = "Player | Status")
 	FPlayerStatus m_Status;
 
@@ -38,11 +49,28 @@ private:
 	FHitResult m_TraceHitResult;
 
 private:
+	FTimerHandle m_WaveTimer;
+
+private:
 	APlayerCharacterController();
 
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+public:
+	void SetWaveState(EWaveState _State);
+
+private:
+	void WaveCountdown();
+	void WaveStart();
+	void WaveStartTimerEnd();
+	void WavePlay();
+	void WaveComplete();
+	void WaveCompleteTimerEnd();
+
+private:
+	void UpdateWaveCountdown(float _DeltaTime);
 
 private:
 	void InitAmmo();
