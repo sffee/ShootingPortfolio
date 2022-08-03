@@ -92,3 +92,10 @@ void UPlayerCharacterAnimInstance::AnimNotify_ReloadFinish()
 	if (m_Player)
 		m_Player->ReloadFinish();
 }
+
+void UPlayerCharacterAnimInstance::AnimNotify_EquipFinish()
+{
+	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(TryGetPawnOwner()) : m_Player;
+	if (m_Player)
+		m_Player->EquipFinish();
+}

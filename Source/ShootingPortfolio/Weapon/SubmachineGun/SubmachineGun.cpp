@@ -6,6 +6,10 @@ ASubmachineGun::ASubmachineGun()
 	if (WeaponMesh.Succeeded())
 		GetMesh()->SetSkeletalMesh(WeaponMesh.Object);
 
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WeaponIcon(TEXT("Texture2D'/Game/Game/Asset/Texture/Icon/SMGIcon.SMGIcon'"));
+	if (WeaponIcon.Succeeded())
+		m_WeaponIcon = WeaponIcon.Object;
+
 	static ConstructorHelpers::FObjectFinder<USoundCue> FireSound(TEXT("SoundCue'/Game/Game/Asset/Sound/Gunshots/AR_Shot_1_Cue.AR_Shot_1_Cue'"));
 	if (FireSound.Succeeded())
 		m_FireSound = FireSound.Object;

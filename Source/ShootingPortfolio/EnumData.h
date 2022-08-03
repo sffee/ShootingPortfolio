@@ -13,6 +13,7 @@ enum class EPlayerState : uint8
 {
 	Idle,
 	Reloading,
+	Equipping,
 
 	MAX
 };

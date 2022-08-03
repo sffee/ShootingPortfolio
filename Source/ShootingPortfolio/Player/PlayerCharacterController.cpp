@@ -4,9 +4,12 @@
 #include "ShootingPortfolio/Weapon/Weapon.h"
 #include "ShootingPortfolio/UI/ShootingHUD.h"
 #include "ShootingPortfolio/UI/PlayerOverlayWidget.h"
+#include "ShootingPortfolio/UI/WeaponSlotWidget.h"
+#include "ShootingPortfolio/UI/WeaponInventoryWidget.h"
 #include "ShootingPortfolio/Weapon/Weapon.h"
 #include "ShootingPortfolio/Monster/Monster.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "ShootingPortfolio/GameMode/ShootingGameMode.h"
 
 APlayerCharacterController::APlayerCharacterController()
@@ -259,8 +262,41 @@ bool APlayerCharacterController::AmmoMapEmpty(EWeaponType _Type)
 	return false;
 }
 
+void APlayerCharacterController::ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex)
+{
+	if (_SlotIndex < 0 || m_WeaponInventory.Num() <= _SlotIndex)
+		return;
+
+	if (_Weapon->GetInventorySlotIndex() == _SlotIndex)
+		return;
+
+	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
+	if (m_Player == nullptr)
+		return;
+
+	PlayChangeWeaponAnimation(_Weapon, m_WeaponInventory[_SlotIndex]);
+
+	m_Player->PlayMontage(m_Player->GetEquipWeaponMontage(), TEXT("Equip"));
+	m_Player->EquipWeapon(m_WeaponInventory[_SlotIndex]);
+	m_Player->SetState(EPlayerState::Equipping);
+}
+
+void APlayerCharacterController::PlayChangeWeaponAnimation(const AWeapon* _OldWeapon, const AWeapon* _NewWeapon)
+{
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD == nullptr || m_HUD->m_PlayerOverlayWidget == nullptr)
+		return;
+
+	if (_OldWeapon)
+		m_HUD->m_PlayerOverlayWidget->WeaponInventory->PlayAnimation(GetWeaponSlotAnimation(_OldWeapon), 0.f, 1, EUMGSequencePlayMode::Reverse);
+
+	if (_NewWeapon)
+		m_HUD->m_PlayerOverlayWidget->WeaponInventory->PlayAnimation(GetWeaponSlotAnimation(_NewWeapon));
+}
+
 void APlayerCharacterController::UpdateHPHUD()
 {
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
 	if (m_HUD == nullptr)
 		return;
 
@@ -269,6 +305,7 @@ void APlayerCharacterController::UpdateHPHUD()
 
 void APlayerCharacterController::UpdateStaminaHUD()
 {
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
 	if (m_HUD == nullptr)
 		return;
 
@@ -278,6 +315,7 @@ void APlayerCharacterController::UpdateStaminaHUD()
 void APlayerCharacterController::UpdateAmmoHUD()
 {
 	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
 	if (m_HUD == nullptr || m_Player == nullptr)
 		return;
 
@@ -290,4 +328,90 @@ void APlayerCharacterController::UpdateAmmoHUD()
 		return;
 
 	m_HUD->SetAmmo(Weapon->GetAmmo(), m_AmmoMap[WeaponType]);
+
+	int32 Ammo = m_AmmoMap[WeaponType] + Weapon->GetAmmo();
+	UWeaponSlotWidget* SlotWidget = GetWeaponSlotWidget(Weapon);
+	SlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+}
+
+void APlayerCharacterController::AddWeapon(AWeapon* _Weapon)
+{
+	_Weapon->SetInventorySlotIndex(m_WeaponInventory.Num());
+	m_WeaponInventory.Add(_Weapon);
+
+	UWeaponSlotWidget* WeaponSlotWidget = GetWeaponSlotWidget(_Weapon);
+
+	WeaponSlotWidget->BackgroundImage->SetVisibility(ESlateVisibility::Visible);
+
+	WeaponSlotWidget->WeaponIconImage->SetVisibility(ESlateVisibility::Visible);
+	WeaponSlotWidget->WeaponIconImage->SetBrushFromTexture(_Weapon->GetWeaponIcon());
+
+	if (m_AmmoMap.Contains(_Weapon->GetWeaponType()))
+	{
+		WeaponSlotWidget->AmmoText->SetVisibility(ESlateVisibility::Visible);
+
+		int32 Ammo = m_AmmoMap[_Weapon->GetWeaponType()] + _Weapon->GetAmmo();
+		WeaponSlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+	}
+
+	if (m_WeaponInventory.Num() == 1)
+		PlayChangeWeaponAnimation(nullptr, _Weapon);
+}
+
+UWeaponSlotWidget* APlayerCharacterController::GetWeaponSlotWidget(const AWeapon* _Weapon)
+{
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD == nullptr || m_HUD->m_PlayerOverlayWidget == nullptr || _Weapon == nullptr)
+		return nullptr;
+	
+	UWeaponSlotWidget* Widget = nullptr;
+
+	switch (_Weapon->GetInventorySlotIndex())
+	{
+	case 0:
+		Widget = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot0;
+		break;
+	case 1:
+		Widget = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot1;
+		break;
+	case 2:
+		Widget = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot2;
+		break;
+	case 3:
+		Widget = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot3;
+		break;
+	default:
+		break;
+	}
+
+	return Widget;
+}
+
+UWidgetAnimation* APlayerCharacterController::GetWeaponSlotAnimation(const AWeapon* _Weapon)
+{
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD == nullptr || m_HUD->m_PlayerOverlayWidget == nullptr || _Weapon == nullptr)
+		return nullptr;
+
+	UWidgetAnimation* Animation = nullptr;
+
+	switch (_Weapon->GetInventorySlotIndex())
+	{
+	case 0:
+		Animation = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot0Animation;
+		break;
+	case 1:
+		Animation = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot1Animation;
+		break;
+	case 2:
+		Animation = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot2Animation;
+		break;
+	case 3:
+		Animation = m_HUD->m_PlayerOverlayWidget->WeaponInventory->WeaponSlot3Animation;
+		break;
+	default:
+		break;
+	}
+
+	return Animation;
 }

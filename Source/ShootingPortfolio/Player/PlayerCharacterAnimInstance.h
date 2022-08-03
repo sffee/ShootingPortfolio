@@ -77,4 +77,7 @@ private:
 public:
 	UFUNCTION()
 	void AnimNotify_ReloadFinish();
+
+	UFUNCTION()
+	void AnimNotify_EquipFinish();
 };

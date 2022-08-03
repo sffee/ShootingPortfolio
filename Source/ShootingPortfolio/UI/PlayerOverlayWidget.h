@@ -6,6 +6,7 @@
 
 class UHPStaminaWidget;
 class UAmmoWidget;
+class UWeaponInventoryWidget;
 class UTextBlock;
 
 UCLASS()
@@ -29,11 +30,15 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WaveStartCompleteText;
 
+	UPROPERTY(meta = (BindWidget))
+	UWeaponInventoryWidget* WeaponInventory;
+
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* WaveStartAnimation;
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* WaveCompleteAnimation;
+
 
 protected:
 	virtual void NativeConstruct() override;

@@ -74,6 +74,10 @@ APlayerCharacter::APlayerCharacter()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> DamageAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/DamageMontage.DamageMontage'"));
 	if (DamageAnimMontage.Succeeded())
 		m_DamageAnimMontage = DamageAnimMontage.Object;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> EquipWeaponMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/EquipWeaponMontage.EquipWeaponMontage'"));
+	if (EquipWeaponMontage.Succeeded())
+		m_EquipWeaponAnimMontage = EquipWeaponMontage.Object;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -97,12 +101,19 @@ void APlayerCharacter::BeginPlay()
 
 	if (GetCharacterMovement())
 		m_DefaultMoveSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	
+	AWeapon* DefaultWeapon = SpawnDefaultWeapon();
+	EquipWeapon(DefaultWeapon);
 
 	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
 	if (m_Controller)
+	{
 		m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(m_Controller->GetHUD()) : m_HUD;
+		m_Controller->AddWeapon(DefaultWeapon);
+		m_Controller->AddWeapon(SpawnDefaultWeapon());
+	}
 
-	EquipWeapon(SpawnDefaultWeapon());
+	PlayMontage(m_EquipWeaponAnimMontage, TEXT("Equip"));
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -131,7 +142,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Aiming", IE_Pressed, this, &APlayerCharacter::AimingButtonPressed);
 	PlayerInputComponent->BindAction("Aiming", IE_Released, this, &APlayerCharacter::AimingButtonReleased);
 
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerCharacter::ReloadPressed);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerCharacter::ReloadButtonPressed);
+
+	PlayerInputComponent->BindAction("Key1", IE_Pressed, this, &APlayerCharacter::Key1ButtonPressed);
+	PlayerInputComponent->BindAction("Key2", IE_Pressed, this, &APlayerCharacter::Key2ButtonPressed);
 
 }
 
@@ -199,9 +213,19 @@ void APlayerCharacter::AimingButtonReleased()
 	StopAiming();
 }
 
-void APlayerCharacter::ReloadPressed()
+void APlayerCharacter::ReloadButtonPressed()
 {
 	Reloading();
+}
+
+void APlayerCharacter::Key1ButtonPressed()
+{
+	ChangeWeapon(m_EquipWeapon, 0);
+}
+
+void APlayerCharacter::Key2ButtonPressed()
+{
+	ChangeWeapon(m_EquipWeapon, 1);
 }
 
 AWeapon* APlayerCharacter::SpawnDefaultWeapon()
@@ -276,15 +300,12 @@ void APlayerCharacter::Fire()
 	if (m_EquipWeapon->IsAutoFire())
 		GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
 
-	return;
 	if (m_Controller)
 		m_Controller->SubAmmo();
 }
 
 void APlayerCharacter::FireTimerEnd()
 {
-	m_State = EPlayerState::Idle;
-
 	if (m_EquipWeapon == nullptr)
 		return;
 
@@ -324,6 +345,27 @@ void APlayerCharacter::ReloadFinish()
 
 	if (m_FireButtonPress)
 		Fire();
+}
+
+void APlayerCharacter::EquipFinish()
+{
+	m_State = EPlayerState::Idle;
+
+	if (m_FireButtonPress)
+		Fire();
+
+	if (m_AimingButton)
+		Aiming();
+}
+
+void APlayerCharacter::ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex)
+{
+	if (m_IsAiming)
+		StopAiming();
+
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller)
+		m_Controller->ChangeWeapon(_Weapon, _SlotIndex);
 }
 
 void APlayerCharacter::UpdateCameraFOV(float _DeltaTime)

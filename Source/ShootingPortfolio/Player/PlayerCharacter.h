@@ -82,6 +82,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	UAnimMontage* m_ReloadAnimMontage;
 
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	UAnimMontage* m_EquipWeaponAnimMontage;
+
 	FTimerHandle m_AutoFireTimer;
 	FHitResult m_TraceHitResult;
 
@@ -130,11 +133,13 @@ private:
 	void AimingButtonPressed();
 	void AimingButtonReleased();
 
-	void ReloadPressed();
+	void ReloadButtonPressed();
+
+	void Key1ButtonPressed();
+	void Key2ButtonPressed();
 
 private:
 	AWeapon* SpawnDefaultWeapon();
-	void EquipWeapon(AWeapon* _Weapon);
 
 	void Aiming();
 	void StopAiming();
@@ -148,6 +153,13 @@ private:
 
 public:
 	void ReloadFinish();
+	void EquipFinish();
+
+public:
+	void EquipWeapon(AWeapon* _Weapon);
+
+private:
+	void ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex);
 
 private:
 	void UpdateCameraFOV(float _DeltaTime);
@@ -169,6 +181,7 @@ public:
 
 public:
 	FORCEINLINE void SetState(EPlayerState _State) { m_State = _State; }
+	FORCEINLINE void SetWeapon(AWeapon* _Weapon) { m_EquipWeapon = _Weapon; }
 
 public:
 	FORCEINLINE bool IsAiming() const { return m_IsAiming; }
@@ -180,4 +193,5 @@ public:
 	FORCEINLINE float GetAOYaw() const { return m_AOYaw; }
 	FORCEINLINE float GetAOPitch() const { return m_AOPitch; }
 	FORCEINLINE const FHitResult& GetTraceHitResult() const { return m_TraceHitResult; }
+	FORCEINLINE UAnimMontage* GetEquipWeaponMontage() const { return m_EquipWeaponAnimMontage; }
 };

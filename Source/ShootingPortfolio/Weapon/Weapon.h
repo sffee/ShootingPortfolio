@@ -21,9 +21,15 @@ private:
 protected:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	FString m_Name;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	UTexture2D* m_WeaponIcon;
 	
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	EWeaponType m_Type;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	int32 m_InventorySlotIndex;
 
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	int32 m_Damage;
@@ -111,8 +117,11 @@ public:
 	FORCEINLINE int32 GetAmmo() const { return m_Ammo; }
 	FORCEINLINE int32 GetMagazine() const { return m_Magazine; }
 	FORCEINLINE float GetRange() const { return m_Range; }
+	FORCEINLINE UTexture2D* GetWeaponIcon() const { return m_WeaponIcon; }
+	FORCEINLINE int32 GetInventorySlotIndex() const { return m_InventorySlotIndex; }
 
 public:
 	FORCEINLINE bool AmmoEmpty() const { return m_Ammo == 0; }
 	FORCEINLINE bool AmmoFull() const { return m_Magazine <= m_Ammo; }
+	FORCEINLINE void SetInventorySlotIndex(int32 _InventorySlotIndex) { m_InventorySlotIndex = _InventorySlotIndex; }
 };

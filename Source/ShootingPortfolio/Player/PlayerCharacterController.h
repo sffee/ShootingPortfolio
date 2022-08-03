@@ -10,6 +10,7 @@
 class APlayerCharacter;
 class AShootingHUD;
 class AWeapon;
+class UWeaponSlotWidget;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API APlayerCharacterController : public APlayerController
@@ -20,17 +21,20 @@ class SHOOTINGPORTFOLIO_API APlayerCharacterController : public APlayerControlle
 	
 private:
 	APlayerCharacter* m_Player;
-	AWeapon* m_EquipWeapon;
 	AShootingHUD* m_HUD;
 
 private:
-	UPROPERTY(VisibleAnywhere, Category = "Wave")
+	UPROPERTY(VisibleAnywhere, Category = "Player | Weapon")
+	TArray<AWeapon*> m_WeaponInventory;
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = Wave)
 	EWaveState m_WaveState;
 	
-	UPROPERTY(EditAnywhere, Category = "Wave")
+	UPROPERTY(EditAnywhere, Category = Wave)
 	float m_StartWaveCountTime;
 
-	UPROPERTY(VisibleAnywhere, Category = "Wave")
+	UPROPERTY(VisibleAnywhere, Category = Wave)
 	float m_RemainingWaveCountTime;
 	int32 m_PrevReminingWaveCountTime;
 
@@ -82,9 +86,18 @@ public:
 	void SubAmmo();
 	void ReloadFinish();
 	bool AmmoMapEmpty(EWeaponType _Type);
+	void ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex);
 
 public:
 	void UpdateHPHUD();
 	void UpdateStaminaHUD();
 	void UpdateAmmoHUD();
+
+public:
+	void AddWeapon(AWeapon* _Weapon);
+
+private:
+	UWeaponSlotWidget* GetWeaponSlotWidget(const AWeapon* _Weapon);
+	UWidgetAnimation* GetWeaponSlotAnimation(const AWeapon* _Weapon);
+	void PlayChangeWeaponAnimation(const AWeapon* _OldWeapon, const AWeapon* _NewWeapon);
 };
