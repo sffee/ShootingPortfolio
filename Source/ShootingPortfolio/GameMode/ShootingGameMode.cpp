@@ -193,6 +193,7 @@ void AShootingGameMode::SpawnMonster(TSubclassOf<AMonster> _Monster, const FMons
 
 	FTransform MonsterTransform = Monster->GetActorTransform();
 	MonsterTransform.SetLocation(RandomLocation);
+	MonsterTransform.SetRotation(FQuat(_SpawnPointData.Rotation));
 	
 	Monster->FinishSpawning(MonsterTransform);
 }

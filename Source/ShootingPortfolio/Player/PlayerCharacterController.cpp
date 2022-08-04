@@ -340,6 +340,8 @@ void APlayerCharacterController::AddWeapon(AWeapon* _Weapon)
 	m_WeaponInventory.Add(_Weapon);
 
 	UWeaponSlotWidget* WeaponSlotWidget = GetWeaponSlotWidget(_Weapon);
+	if (WeaponSlotWidget == nullptr)
+		return;
 
 	WeaponSlotWidget->BackgroundImage->SetVisibility(ESlateVisibility::Visible);
 
