@@ -34,6 +34,7 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FVector PlayerVelocity = m_Player->GetVelocity();
 	PlayerVelocity.Z = 0.f;
 	m_Speed = PlayerVelocity.Size();
+	m_PlayerState = m_Player->GetState();
 
 	m_IsAccel = 0.f < m_Player->GetCharacterMovement()->GetCurrentAcceleration().Size();
 	m_IsAiming = m_Player->IsAiming();
@@ -51,7 +52,7 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	EPlayerState PlayerState = m_Player->GetState();
 
 	m_UseAimOffset = PlayerState == EPlayerState::Idle;
-	m_UseFABRIK = PlayerState == EPlayerState::Idle;
+	m_UseFABRIK = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Sprint;
 }
 
 void UPlayerCharacterAnimInstance::CalcYaw(float _DeltaTime)

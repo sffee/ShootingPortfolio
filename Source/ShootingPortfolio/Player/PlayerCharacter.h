@@ -35,8 +35,11 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	float m_DefaultMoveSpeed;
 
-	UPROPERTY(VisibleAnywhere, Category = Movement)
+	UPROPERTY(EditAnywhere, Category = Movement)
 	float m_AimingMoveSpeed;
+
+	UPROPERTY(EditAnywhere, Category = Movement)
+	float m_SprintMoveSpeed;
 
 	UPROPERTY()
 	USpringArmComponent* m_CameraArm;
@@ -47,14 +50,35 @@ private:
 private:
 	UPROPERTY(VisibleAnywhere, Category = Info)
 	EPlayerState m_State;
-	
-	UPROPERTY(VisibleAnywhere, Category = Info)
-	float m_DefaultCameraFOV;
-
-	UPROPERTY(VisibleAnywhere, Category = Info)
-	float m_CurCameraFOV;
 
 	UPROPERTY(EditAnywhere, Category = Info)
+	float m_SprintStaminaConsumeSpeed;
+	
+	UPROPERTY(EditAnywhere, Category = Info)
+	float m_StaminaRestoreSpeed;
+
+	UPROPERTY(EditAnywhere, Category = Info)
+	float m_StaminaRestoreStartTime;
+
+	UPROPERTY(VisibleAnywhere, Category = Info)
+	bool m_StaminaRestore;
+
+	FTimerHandle m_StaminaRetoreTimer;
+	
+private:
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	float m_DefaultCameraFOV;
+
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	float m_CurCameraFOV;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float m_SprintCameraFOV;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float m_SprintCameraZoomSpeed;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
 	float m_ZoomReleaseSpeed;
 
 private:
@@ -89,10 +113,16 @@ private:
 	FHitResult m_TraceHitResult;
 
 private:
+	bool m_IsMoveForward;
+	bool m_IsMoveSide;
+
 	bool m_AimingButton;
 	bool m_IsAiming;
 
 	bool m_FireButtonPress;
+
+	bool m_SprintButtonPress;
+	bool m_IsSprint;
 
 private:
 	float m_CrosshairAimingValue;
@@ -135,6 +165,9 @@ private:
 
 	void ReloadButtonPressed();
 
+	void SprintButtonPressed();
+	void SprintButtonReleased();
+
 	void Key1ButtonPressed();
 	void Key2ButtonPressed();
 
@@ -148,6 +181,9 @@ private:
 	void FireTimerEnd();
 
 	void Reloading();
+
+	void Sprint();
+	void StopSprint();
 
 	void DamageTimerEnd();
 
@@ -167,6 +203,10 @@ private:
 	void UpdateAimOffset(float _DeltaTime);
 	void UpdateTraceHitResult();
 	void UpdateCrosshairColor();
+	void UpdateStamina(float _DeltaTime);
+
+private:
+	void StartStaminaRestore();
 
 private:
 	void TurnInPlace(float _DeltaTime);

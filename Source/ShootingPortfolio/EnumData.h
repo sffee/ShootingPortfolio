@@ -12,6 +12,7 @@ UENUM(BlueprintType)
 enum class EPlayerState : uint8
 {
 	Idle,
+	Sprint,
 	Reloading,
 	Equipping,
 

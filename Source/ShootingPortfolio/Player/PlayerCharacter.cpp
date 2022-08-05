@@ -12,15 +12,26 @@ APlayerCharacter::APlayerCharacter()
 	, m_AimingLookUpRate(20.f)
 	, m_DefaultMoveSpeed(600.f)
 	, m_AimingMoveSpeed(300.f)
+	, m_SprintMoveSpeed(900.f)
 	, m_State(EPlayerState::Idle)
+	, m_SprintStaminaConsumeSpeed(20.f)
+	, m_StaminaRestoreSpeed(10.f)
+	, m_StaminaRestoreStartTime(1.5f)
+	, m_StaminaRestore(true)
 	, m_DefaultCameraFOV(0.f)
 	, m_CurCameraFOV(0.f)
+	, m_SprintCameraFOV(60.f)
+	, m_SprintCameraZoomSpeed(5.f)
 	, m_ZoomReleaseSpeed(20.f)
 	, m_CanDamage(true)
 	, m_CanDamageTimeRate(0.8f)
+	, m_IsMoveForward(false)
+	, m_IsMoveSide(false)
 	, m_AimingButton(false)
 	, m_IsAiming(false)
 	, m_FireButtonPress(false)
+	, m_SprintButtonPress(false)
+	, m_IsSprint(false)
 	, m_CrosshairAimingValue(0.f)
 	, m_CrosshairRecoilValue(0.f)
 	, m_CrosshairRecoilMaxValue(3.75f)
@@ -125,6 +136,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	UpdateAimOffset(DeltaTime);
 	UpdateTraceHitResult();
 	UpdateCrosshairColor();
+	UpdateStamina(DeltaTime);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -144,6 +156,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerCharacter::ReloadButtonPressed);
 
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::SprintButtonPressed);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::SprintButtonReleased);
+
 	PlayerInputComponent->BindAction("Key1", IE_Pressed, this, &APlayerCharacter::Key1ButtonPressed);
 	PlayerInputComponent->BindAction("Key2", IE_Pressed, this, &APlayerCharacter::Key2ButtonPressed);
 
@@ -152,7 +167,14 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::MoveForward(float _Value)
 {
 	if (_Value == 0.f)
+	{
+		if (m_IsSprint)
+			StopSprint();
+
 		return;
+	}
+	
+	m_IsMoveForward = _Value == 1.f ? true : false;
 
 	const FRotator Rotation(Controller->GetControlRotation());
 	const FRotator RotationYaw(0.f, Rotation.Yaw, 0.f);
@@ -163,7 +185,7 @@ void APlayerCharacter::MoveForward(float _Value)
 
 void APlayerCharacter::MoveRight(float _Value)
 {
-	if (_Value == 0.f)
+	if (_Value == 0.f || m_State == EPlayerState::Sprint)
 		return;
 
 	const FRotator Rotation(Controller->GetControlRotation());
@@ -216,6 +238,18 @@ void APlayerCharacter::AimingButtonReleased()
 void APlayerCharacter::ReloadButtonPressed()
 {
 	Reloading();
+}
+
+void APlayerCharacter::SprintButtonPressed()
+{
+	m_SprintButtonPress = true;
+
+	Sprint();
+}
+
+void APlayerCharacter::SprintButtonReleased()
+{
+	m_SprintButtonPress = false;
 }
 
 void APlayerCharacter::Key1ButtonPressed()
@@ -279,8 +313,14 @@ void APlayerCharacter::StopAiming()
 
 void APlayerCharacter::Fire()
 {
-	if (m_EquipWeapon == nullptr || m_State != EPlayerState::Idle)
+	if (m_EquipWeapon == nullptr)
 		return;
+
+	if (m_State != EPlayerState::Idle)
+	{
+		if (m_State == EPlayerState::Sprint)
+			StopSprint();
+	}
 
 	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
 	if (m_EquipWeapon->AmmoEmpty())
@@ -315,8 +355,16 @@ void APlayerCharacter::FireTimerEnd()
 
 void APlayerCharacter::Reloading()
 {
-	if (m_EquipWeapon == nullptr || m_State != EPlayerState::Idle)
+	if (m_EquipWeapon == nullptr)
 		return;
+
+	if (m_State != EPlayerState::Idle)
+	{
+		if (m_State == EPlayerState::Sprint)
+			StopSprint();
+		else
+			return;
+	}
 
 	if (m_Controller == nullptr || m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) || m_EquipWeapon->AmmoFull())
 		return;
@@ -326,6 +374,38 @@ void APlayerCharacter::Reloading()
 
 	if (m_ReloadAnimMontage)
 		PlayMontage(m_ReloadAnimMontage, m_EquipWeapon->GetReloadSectionName());
+}
+
+void APlayerCharacter::Sprint()
+{
+	if (m_IsMoveForward == false)
+		return;
+
+	if (m_State != EPlayerState::Idle && m_State != EPlayerState::Sprint)
+		return;
+
+	if (m_IsSprint)
+	{
+		StopSprint();
+	}
+	else
+	{
+		m_StaminaRestore = false;
+
+		GetCharacterMovement()->MaxWalkSpeed = m_SprintMoveSpeed;
+		m_State = EPlayerState::Sprint;
+		m_IsSprint = true;
+	}
+}
+
+void APlayerCharacter::StopSprint()
+{
+	m_IsSprint = false;
+	GetCharacterMovement()->MaxWalkSpeed = m_DefaultMoveSpeed;
+
+	m_State = EPlayerState::Idle;
+
+	GetWorldTimerManager().SetTimer(m_StaminaRetoreTimer, this, &APlayerCharacter::StartStaminaRestore, m_StaminaRestoreStartTime);
 }
 
 void APlayerCharacter::DamageTimerEnd()
@@ -360,6 +440,9 @@ void APlayerCharacter::EquipFinish()
 
 void APlayerCharacter::ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex)
 {
+	if (m_State == EPlayerState::Sprint)
+		return;
+
 	if (m_IsAiming)
 		StopAiming();
 
@@ -373,9 +456,12 @@ void APlayerCharacter::UpdateCameraFOV(float _DeltaTime)
 	if (m_EquipWeapon == nullptr || m_FollowCamera == nullptr)
 		return;
 
-	m_CurCameraFOV = m_IsAiming ?
-		FMath::FInterpTo(m_CurCameraFOV, m_EquipWeapon->GetCameraZoomFOV(), _DeltaTime, m_EquipWeapon->GetCameraZoomSpeed()) :
-		FMath::FInterpTo(m_CurCameraFOV, m_DefaultCameraFOV, _DeltaTime, m_ZoomReleaseSpeed);
+	if (m_IsAiming)
+		m_CurCameraFOV = FMath::FInterpTo(m_CurCameraFOV, m_EquipWeapon->GetCameraZoomFOV(), _DeltaTime, m_EquipWeapon->GetCameraZoomSpeed());
+	else if (m_IsSprint)
+		m_CurCameraFOV = FMath::FInterpTo(m_CurCameraFOV, m_SprintCameraFOV, _DeltaTime, m_SprintCameraZoomSpeed);
+	else
+		m_CurCameraFOV = FMath::FInterpTo(m_CurCameraFOV, m_DefaultCameraFOV, _DeltaTime, m_ZoomReleaseSpeed);
 
 	m_FollowCamera->FieldOfView = m_CurCameraFOV;
 }
@@ -497,6 +583,23 @@ void APlayerCharacter::UpdateCrosshairColor()
 
 	if (m_HUD)
 		m_HUD->SetCrosshairColor(CrosshairColor);
+}
+
+void APlayerCharacter::UpdateStamina(float _DeltaTime)
+{
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller == nullptr)
+		return;
+
+	if (m_IsSprint)
+		m_Controller->AddStamina(-_DeltaTime * m_StaminaRestoreSpeed);
+	else if (m_StaminaRestore)
+		m_Controller->AddStamina(_DeltaTime * m_StaminaRestoreSpeed);
+}
+
+void APlayerCharacter::StartStaminaRestore()
+{
+	m_StaminaRestore = true;
 }
 
 void APlayerCharacter::TurnInPlace(float _DeltaTime)

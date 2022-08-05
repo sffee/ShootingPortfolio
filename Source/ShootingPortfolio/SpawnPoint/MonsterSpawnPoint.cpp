@@ -6,6 +6,7 @@ AMonsterSpawnPoint::AMonsterSpawnPoint()
 	: m_Index(0)
 {
 	m_Box = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
+	m_Box->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SetRootComponent(m_Box);
 
 	m_ArrowComponent = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
