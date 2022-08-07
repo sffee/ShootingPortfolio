@@ -29,8 +29,16 @@ void AMonsterAIController::OnPossess(APawn* _Monster)
 		if (m_BehaviorTree)
 			RunBehaviorTree(m_BehaviorTree);
 
-		APlayerCharacter* Player = Cast<APlayerCharacter>((UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
-		if (Player)
-			Blackboard->SetValueAsObject(TEXT("Target"), Player);
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
+		{
+			APlayerCharacter* Player = Cast<APlayerCharacter>(PlayerController->GetPawn());
+			if (Player && Blackboard)
+			{
+				Blackboard->SetValueAsObject(TEXT("Target"), Player);
+				Blackboard->SetValueAsBool(TEXT("Movable"), true);
+				Blackboard->SetValueAsBool(TEXT("Attackable"), true);
+			}
+		}
 	}
 }

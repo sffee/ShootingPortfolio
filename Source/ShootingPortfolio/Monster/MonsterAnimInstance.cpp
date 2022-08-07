@@ -30,12 +30,12 @@ void UMonsterAnimInstance::AnimNotify_RightWeaponAttack()
 {
 	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
 	if (m_Monster)
-		m_Monster->GetRightWeaponCollsiion()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		m_Monster->RightWeaponCollisionEnable();
 }
 
 void UMonsterAnimInstance::AnimNotify_RightWeaponAttackEnd()
 {
 	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
 	if (m_Monster)
-		m_Monster->GetRightWeaponCollsiion()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		m_Monster->RightWeaponCollisionDisable();
 }

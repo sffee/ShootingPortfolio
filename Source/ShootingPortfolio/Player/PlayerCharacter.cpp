@@ -12,7 +12,7 @@ APlayerCharacter::APlayerCharacter()
 	, m_AimingLookUpRate(20.f)
 	, m_DefaultMoveSpeed(600.f)
 	, m_AimingMoveSpeed(300.f)
-	, m_SprintMoveSpeed(900.f)
+	, m_SprintMoveSpeed(3000.f)
 	, m_State(EPlayerState::Idle)
 	, m_SprintStaminaConsumeSpeed(20.f)
 	, m_StaminaRestoreSpeed(10.f)
@@ -296,7 +296,7 @@ void APlayerCharacter::EquipWeapon(AWeapon* _Weapon)
 
 void APlayerCharacter::Aiming()
 {
-	if (m_State == EPlayerState::Reloading)
+	if (m_State == EPlayerState::Reloading || m_State == EPlayerState::Sprint)
 		return;
 
 	m_IsAiming = true;
@@ -306,6 +306,9 @@ void APlayerCharacter::Aiming()
 
 void APlayerCharacter::StopAiming()
 {
+	if (m_IsAiming == false)
+		return;
+
 	m_IsAiming = false;
 
 	GetCharacterMovement()->MaxWalkSpeed = m_DefaultMoveSpeed;
@@ -382,6 +385,9 @@ void APlayerCharacter::Sprint()
 		return;
 
 	if (m_State != EPlayerState::Idle && m_State != EPlayerState::Sprint)
+		return;
+
+	if (m_IsAiming)
 		return;
 
 	if (m_IsSprint)

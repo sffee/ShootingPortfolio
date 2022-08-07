@@ -3,11 +3,14 @@
 #include "ShootingPortfolio/Player/PlayerCharacter.h"
 
 AMinions::AMinions()
-	: m_AttackDamage(10.f)
 {
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MinionsMesh(TEXT("SkeletalMesh'/Game/ParagonMinions/Characters/Minions/Down_Minions/Meshes/Minion_Lane_Melee_Core_Dawn.Minion_Lane_Melee_Core_Dawn'"));
 	if (MinionsMesh.Succeeded())
 		GetMesh()->SetSkeletalMesh(MinionsMesh.Object);
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInst(TEXT("AnimBlueprint'/Game/Game/Blueprints/Monster/Minions/ABP_Minions.ABP_Minions_C'"));
+	if (AnimInst.Succeeded())
+		GetMesh()->SetAnimInstanceClass(AnimInst.Class);
 
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> DeathParticle(TEXT("ParticleSystem'/Game/ParagonMinions/FX/Particles/Minions/Minion_melee/FX/Death/P_RangedMinion_Chunks3.P_RangedMinion_Chunks3'"));
 	if (DeathParticle.Succeeded())
@@ -16,6 +19,10 @@ AMinions::AMinions()
 	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BehaviorTree(TEXT("BehaviorTree'/Game/Game/Blueprints/Monster/Minions/BT_Minions.BT_Minions'"));
 	if (BehaviorTree.Succeeded())
 		m_BehaviorTree = BehaviorTree.Object;
+
+	static ConstructorHelpers::FObjectFinder<UBlackboardData> Blackboard(TEXT("BlackboardData'/Game/Game/Blueprints/Monster/BB_Monster.BB_Monster'"));
+	if (Blackboard.Succeeded())
+		m_Blackboard = Blackboard.Object;
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> AttackMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Monster/Minions/Animation/AttackMontage.AttackMontage'"));
 	if (AttackMontage.Succeeded())
@@ -35,6 +42,7 @@ AMinions::AMinions()
 		m_HPBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 180.f));
 
 	m_Status.MaxHP = 30;
+	m_AttackDamage = 10.f;
 
 	m_AttackSectionNameList.Add(FName("Attack"));
 }
@@ -46,17 +54,8 @@ void AMinions::BeginPlay()
 
 void AMinions::Destroyed()
 {
-	Super::Destroyed();
-
 	if (m_DeathParticle)
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_DeathParticle, GetActorTransform());
-}
 
-void AMinions::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)
-{
-	Super::OnBeginOverlap(_PrimitiveComponent, _OtherActor, _OtherComp, _OtherBodyIndex, _bFromSweep, _SweepResult);
-
-	APlayerCharacter* Player = Cast<APlayerCharacter>(_OtherActor);
-	if (Player && Controller)
-		UGameplayStatics::ApplyDamage(Player, m_AttackDamage, Controller, this, UDamageType::StaticClass());
+	Super::Destroyed();
 }

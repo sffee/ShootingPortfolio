@@ -12,6 +12,8 @@
 
 DECLARE_DELEGATE_OneParam(FSpawnMonsterDieDelegate, UObject*)
 
+class APlayerCharacter;
+
 UCLASS()
 class SHOOTINGPORTFOLIO_API AMonster : public ACharacter
 {
@@ -24,6 +26,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* m_RightWeaponCollision;
 	
+protected:
+	UPROPERTY(EditAnywhere, Category = Attack)
+	float m_AttackDamage;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = Attack, meta = (DisplayName = "AttackSectionName"))
 	TArray<FName> m_AttackSectionNameList;
@@ -58,15 +64,23 @@ public:
 public:
 	bool PlayAttackIndex(int32 _Index);
 
-protected:
+public:
 	void PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName);
+	void SpawnDamageText(const APlayerCharacter* _Player, float _Damage);
 
 protected:
 	UFUNCTION()
 	virtual void ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser);
 
 	UFUNCTION()
-	virtual void OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult);
+	void OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult);
+
+public:
+	virtual void RightWeaponCollisionEnable();
+	virtual void RightWeaponCollisionDisable();
+
+public:
+	void SetAttackSectionName(int32 _Index, FName _SectionName);
 
 public:
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return m_BehaviorTree; }

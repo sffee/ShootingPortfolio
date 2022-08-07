@@ -12,6 +12,8 @@ ANormalMonster::ANormalMonster()
 		m_HPBarWidgetComponent->SetupAttachment(GetMesh());
 		m_HPBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 		m_HPBarWidgetComponent->SetWidgetClass(HPBarWidget.Class);
+		m_HPBarWidgetComponent->SetDrawSize(FVector2D(150.f, 20.f));
+		m_HPBarWidgetComponent->SetVisibility(false);
 	}
 }
 
@@ -44,6 +46,9 @@ void ANormalMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const U
 		return;
 	}
 	
+	if (m_HPBarWidgetComponent)
+		m_HPBarWidgetComponent->SetVisibility(true);
+
 	UpdateHPBarWidget();
 }
 

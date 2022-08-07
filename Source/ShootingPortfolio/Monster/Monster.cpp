@@ -2,6 +2,7 @@
 
 #include "MonsterAIController.h"
 #include "ShootingPortfolio/Player/PlayerCharacter.h"
+#include "ShootingPortfolio/UI/DamageText/DamageTextActor.h"
 
 AMonster::AMonster()
 {
@@ -17,10 +18,6 @@ AMonster::AMonster()
 	m_RightWeaponCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RightWeaponCollsiion"));
 	m_RightWeaponCollision->SetupAttachment(GetMesh(), TEXT("RightWeaponSocket"));
 	m_RightWeaponCollision->SetCollisionProfileName(TEXT("MonsterAttack"));
-
-	static ConstructorHelpers::FObjectFinder<UBlackboardData> Blackboard(TEXT("BlackboardData'/Game/Game/Blueprints/Monster/BB_Monster.BB_Monster'"));
-	if (Blackboard.Succeeded())
-		m_Blackboard = Blackboard.Object;
 
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Monster"));
 	GetMesh()->SetCollisionProfileName(FName("Monster"));
@@ -67,6 +64,18 @@ void AMonster::PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName)
 	}
 }
 
+void AMonster::SpawnDamageText(const APlayerCharacter* _Player, float _Damage)
+{
+	float RandX = FMath::FRandRange(-30.f, 30.f);
+	float RandY = FMath::FRandRange(-30.f, 30.f);
+
+	FVector SpawnLocation = _Player->GetActorLocation() + FVector(0.f, 0.f, _Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()) + FVector(RandX, RandY, 0.f);
+
+	ADamageTextActor* DamageTextActor = GetWorld()->SpawnActor<ADamageTextActor>(ADamageTextActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
+	if (DamageTextActor)
+		DamageTextActor->SetData((int32)_Damage, FLinearColor::Red);
+}
+
 void AMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
 {
 	m_Status.CurHP -= _Damage;
@@ -77,7 +86,33 @@ void AMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamage
 void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)
 {
 	APlayerCharacter* Player = Cast<APlayerCharacter>(_OtherActor);
-	if (Player == nullptr || m_HitParticle == nullptr)
+	if (Player && Controller)
+	{
+		SpawnDamageText(Player, m_AttackDamage);
+		UGameplayStatics::ApplyDamage(Player, m_AttackDamage, Controller, this, UDamageType::StaticClass());
+	}
+}
+
+void AMonster::RightWeaponCollisionEnable()
+{
+	if (m_RightWeaponCollision == nullptr)
 		return;
 
+	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AMonster::RightWeaponCollisionDisable()
+{
+	if (m_RightWeaponCollision == nullptr)
+		return;
+
+	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AMonster::SetAttackSectionName(int32 _Index, FName _SectionName)
+{
+	if (m_AttackSectionNameList.Num() <= _Index)
+		return;
+
+	m_AttackSectionNameList[_Index] = _SectionName;
 }

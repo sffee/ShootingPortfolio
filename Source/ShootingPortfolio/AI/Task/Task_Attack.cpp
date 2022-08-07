@@ -18,5 +18,7 @@ EBTNodeResult::Type UTask_Attack::ExecuteTask(UBehaviorTreeComponent& _OwnerComp
 	if (Monster->PlayAttackIndex(m_AttackIndex) == false)
 		return EBTNodeResult::Failed;
 
+	MonsterController->StopMovement();
+
 	return EBTNodeResult::Succeeded;
 }

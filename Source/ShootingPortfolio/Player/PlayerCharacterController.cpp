@@ -13,7 +13,7 @@
 #include "ShootingPortfolio/GameMode/ShootingGameMode.h"
 
 APlayerCharacterController::APlayerCharacterController()
-	: m_StartWaveCountTime(5.f)
+	: m_StartWaveCountTime(0.f)
 	, m_RemainingWaveCountTime(0.f)
 	, m_PrevReminingWaveCountTime(0.f)
 	, m_FirstHUDUpdateComplete(false)
@@ -24,6 +24,8 @@ APlayerCharacterController::APlayerCharacterController()
 
 void APlayerCharacterController::BeginPlay()
 {
+	Super::BeginPlay();
+
 	m_Player = Cast<APlayerCharacter>(GetPawn());
 	m_HUD = Cast<AShootingHUD>(GetHUD());
 
@@ -216,6 +218,7 @@ void APlayerCharacterController::AddStamina(float _Value)
 
 void APlayerCharacterController::SubAmmo()
 {
+	return;
 	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
 	if (m_Player == nullptr)
 		return;

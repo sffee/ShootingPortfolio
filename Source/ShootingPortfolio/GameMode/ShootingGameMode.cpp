@@ -93,7 +93,7 @@ void AShootingGameMode::InitSpawnPointMap()
 			Data.SpawnPoint = MonsterSpawnPoint;
 			Data.Location = MonsterSpawnPoint->GetActorLocation();
 			Data.Rotation = MonsterSpawnPoint->GetActorRotation();
-			Data.Scale = MonsterSpawnPoint->GetBoxComponent()->GetScaledBoxExtent();
+			Data.Scale = MonsterSpawnPoint->GetBoxComponent()->GetUnscaledBoxExtent();
 
 			m_SpawnPointMap.Add(MonsterSpawnPoint->GetIndex(), Data);
 		}
@@ -182,7 +182,10 @@ void AShootingGameMode::SpawnMonster(TSubclassOf<AMonster> _Monster, const FMons
 	AMonster* Monster = GetWorld()->SpawnActor<AMonster>(_Monster, FVector::ZeroVector, FRotator::ZeroRotator, Param);
 	Monster->m_MonsterDieDelegate.BindUObject(this, &AShootingGameMode::Delegate_MonsterDie);
 
-	FVector RandomLocation = UKismetMathLibrary::RandomPointInBoundingBox(_SpawnPointData.Location, _SpawnPointData.Scale);
+	FVector RandomLocation = UKismetMathLibrary::RandomPointInBoundingBox(FVector::ZeroVector, _SpawnPointData.Scale);
+	RandomLocation = RandomLocation.RotateAngleAxis(FMath::Abs(_SpawnPointData.Rotation.GetComponentForAxis(EAxis::Z)), FVector(0.f, 0.f, 1.f));
+	RandomLocation = FVector(RandomLocation.X + _SpawnPointData.Location.X, RandomLocation.Y + _SpawnPointData.Location.Y, _SpawnPointData.Location.Z);
+	
 	FVector End = RandomLocation;
 	End.Z -= 1000.f;
 

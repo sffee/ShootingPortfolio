@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Monster.h"
-
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 #include "MonsterAnimInstance.generated.h"
+
+class AMonster;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API UMonsterAnimInstance : public UAnimInstance
@@ -27,5 +27,7 @@ public:
 public:
 	UFUNCTION()
 	void AnimNotify_RightWeaponAttack();
+
+	UFUNCTION()
 	void AnimNotify_RightWeaponAttackEnd();
 };
