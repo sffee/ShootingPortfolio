@@ -38,6 +38,8 @@ void AShootingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	return;
+
 	InitSpawnPointMap();
 
 	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);

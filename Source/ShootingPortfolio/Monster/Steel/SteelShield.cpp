@@ -31,18 +31,15 @@ ASteelShield::ASteelShield()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->GravityScale = 0.f;
+
+	GetMesh()->bComponentUseFixedSkelBounds = true;
 
 	m_CollisionBox->SetRelativeLocation(FVector(0.f, -78.f, 275.f));
 	m_CollisionBox->SetBoxExtent(FVector(110.f, 5.f, 80.f));
 	m_CollisionBox->SetCollisionProfileName(FName("MonsterShield"));
 
-	m_RightWeaponCollision->SetRelativeLocation(FVector(220.4f, -7.2f, -6.25f));
-	m_RightWeaponCollision->SetBoxExtent(FVector(110.f, 5.f, 80.f));
-
 	m_Status.MaxHP = 30;
-	m_AttackDamage = 10.f;
 }
 
 void ASteelShield::BeginPlay()

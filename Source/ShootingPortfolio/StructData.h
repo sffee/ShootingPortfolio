@@ -101,3 +101,15 @@ struct FMonsterWave : public FTableRowBase
 	UPROPERTY(EditAnywhere)
 	TArray<FMonsterSpawnData> MonsterSpawnData;
 };
+
+USTRUCT(BlueprintType)
+struct FMonsterAttackInfo : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	float Damage;
+
+	UPROPERTY(EditAnywhere)
+	float Cooltime;
+};

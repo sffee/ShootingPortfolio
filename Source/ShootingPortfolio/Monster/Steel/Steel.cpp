@@ -46,6 +46,10 @@ ASteel::ASteel()
 	if (TransMaterial.Succeeded())
 		GetMesh()->SetMaterial(8, TransMaterial.Object);
 
+	static ConstructorHelpers::FObjectFinder<UDataTable> AttackInfoDataTable(TEXT("DataTable'/Game/Game/Blueprints/Monster/Steel/DataTable/SteelAttackInfoDataTable.SteelAttackInfoDataTable'"));
+	if (AttackInfoDataTable.Succeeded())
+		m_AttackInfoDataTable = AttackInfoDataTable.Object;
+
 	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -74.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
 
@@ -54,11 +58,12 @@ ASteel::ASteel()
 
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 
+	m_LeftWeaponCollision->SetupAttachment(GetMesh(), FName("ShieldSocket"));
+
 	if (m_HPBarWidgetComponent)
 		m_HPBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 180.f));
 
 	m_Status.MaxHP = 30;
-	m_AttackDamage = 10.f;
 
 	m_AttackSectionNameList.Add(FName("ShieldAttack"));
 }

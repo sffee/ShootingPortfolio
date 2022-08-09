@@ -9,9 +9,6 @@ class SHOOTINGPORTFOLIO_API AMinions : public ANormalMonster
 {
 	GENERATED_BODY()
 	
-private:
-	
-
 public:
 	AMinions();
 	

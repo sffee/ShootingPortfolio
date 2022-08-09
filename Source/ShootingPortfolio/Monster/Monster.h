@@ -25,17 +25,22 @@ public:
 protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* m_RightWeaponCollision;
+
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* m_LeftWeaponCollision;
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = Attack)
-	float m_AttackDamage;
+	UDataTable* m_AttackInfoDataTable;
 
-protected:
-	UPROPERTY(EditAnywhere, Category = Attack, meta = (DisplayName = "AttackSectionName"))
+	UPROPERTY(EditAnywhere, Category = Attack)
 	TArray<FName> m_AttackSectionNameList;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
 	UAnimMontage* m_AttackMontage;
+
+	UPROPERTY(VisibleAnywhere, Category = Attack)
+	int32 m_CurPlayAttackIndex;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Status)
@@ -78,6 +83,8 @@ protected:
 public:
 	virtual void RightWeaponCollisionEnable();
 	virtual void RightWeaponCollisionDisable();
+	virtual void LeftWeaponCollisionEnable();
+	virtual void LeftWeaponCollisionDisable();
 
 public:
 	void SetAttackSectionName(int32 _Index, FName _SectionName);

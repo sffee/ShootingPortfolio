@@ -39,3 +39,17 @@ void UMonsterAnimInstance::AnimNotify_RightWeaponAttackEnd()
 	if (m_Monster)
 		m_Monster->RightWeaponCollisionDisable();
 }
+
+void UMonsterAnimInstance::AnimNotify_LeftWeaponAttack()
+{
+	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
+	if (m_Monster)
+		m_Monster->LeftWeaponCollisionEnable();
+}
+
+void UMonsterAnimInstance::AnimNotify_LeftWeaponAttackEnd()
+{
+	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
+	if (m_Monster)
+		m_Monster->LeftWeaponCollisionDisable();
+}

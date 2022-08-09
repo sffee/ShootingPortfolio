@@ -19,6 +19,13 @@ AMonster::AMonster()
 	m_RightWeaponCollision->SetupAttachment(GetMesh(), TEXT("RightWeaponSocket"));
 	m_RightWeaponCollision->SetCollisionProfileName(TEXT("MonsterAttack"));
 
+	m_LeftWeaponCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftWeaponCollsiion"));
+	m_LeftWeaponCollision->SetupAttachment(GetMesh(), TEXT("LeftWeaponSocket"));
+	m_LeftWeaponCollision->SetCollisionProfileName(TEXT("MonsterAttack"));
+
+	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	m_LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Monster"));
 	GetMesh()->SetCollisionProfileName(FName("Monster"));
 }
@@ -33,6 +40,7 @@ void AMonster::BeginPlay()
 	m_Status.CurHP = m_Status.MaxHP;
 
 	m_RightWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
+	m_LeftWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
 }
 
 void AMonster::Tick(float DeltaTime)
@@ -47,7 +55,8 @@ bool AMonster::PlayAttackIndex(int32 _Index)
 		return false;
 
 	PlayMontage(m_AttackMontage, m_AttackSectionNameList[_Index]);
-	
+	m_CurPlayAttackIndex = _Index;
+
 	return true;
 }
 
@@ -79,18 +88,23 @@ void AMonster::SpawnDamageText(const APlayerCharacter* _Player, float _Damage)
 void AMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
 {
 	m_Status.CurHP -= _Damage;
-
-
 }
 
 void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)
 {
 	APlayerCharacter* Player = Cast<APlayerCharacter>(_OtherActor);
-	if (Player && Controller)
-	{
-		SpawnDamageText(Player, m_AttackDamage);
-		UGameplayStatics::ApplyDamage(Player, m_AttackDamage, Controller, this, UDamageType::StaticClass());
-	}
+	if (Player == nullptr || Controller == nullptr)
+		return;
+
+	if (m_AttackInfoDataTable == nullptr)
+		return;
+
+	FMonsterAttackInfo* AttackInfo = m_AttackInfoDataTable->FindRow<FMonsterAttackInfo>(FName(m_AttackSectionNameList[m_CurPlayAttackIndex]), TEXT(""));
+	if (AttackInfo == nullptr)
+		return;
+
+	SpawnDamageText(Player, AttackInfo->Damage);
+	UGameplayStatics::ApplyDamage(Player, AttackInfo->Damage, Controller, this, UDamageType::StaticClass());
 }
 
 void AMonster::RightWeaponCollisionEnable()
@@ -109,9 +123,25 @@ void AMonster::RightWeaponCollisionDisable()
 	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+void AMonster::LeftWeaponCollisionEnable()
+{
+	if (m_LeftWeaponCollision == nullptr)
+		return;
+
+	m_LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AMonster::LeftWeaponCollisionDisable()
+{
+	if (m_LeftWeaponCollision == nullptr)
+		return;
+
+	m_LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
 void AMonster::SetAttackSectionName(int32 _Index, FName _SectionName)
 {
-	if (m_AttackSectionNameList.Num() <= _Index)
+	if (_Index < 0 || m_AttackSectionNameList.Num() <= _Index)
 		return;
 
 	m_AttackSectionNameList[_Index] = _SectionName;
