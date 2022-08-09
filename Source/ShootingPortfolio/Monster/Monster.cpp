@@ -4,7 +4,10 @@
 #include "ShootingPortfolio/Player/PlayerCharacter.h"
 #include "ShootingPortfolio/UI/DamageText/DamageTextActor.h"
 
+#include "ShootingPortfolio/GameInstance/ShootingGameInstance.h"
+
 AMonster::AMonster()
+	: m_IsAttacking(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -27,7 +30,9 @@ AMonster::AMonster()
 	m_LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Monster"));
-	GetMesh()->SetCollisionProfileName(FName("Monster"));
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetMesh()->bReceivesDecals = false;
 }
 
 void AMonster::BeginPlay()
@@ -41,6 +46,12 @@ void AMonster::BeginPlay()
 
 	m_RightWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
 	m_LeftWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
+
+	InitAttackInfoDataTable();
+
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst)
+		AnimInst->OnMontageEnded.AddDynamic(this, &AMonster::OnAttackMontageEnded);
 }
 
 void AMonster::Tick(float DeltaTime)
@@ -49,13 +60,52 @@ void AMonster::Tick(float DeltaTime)
 
 }
 
-bool AMonster::PlayAttackIndex(int32 _Index)
+void AMonster::InitAttackInfoDataTable()
 {
-	if (m_AttackMontage == nullptr || _Index < m_AttackSectionNameList.Num() - 1)
+	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GameInstance == nullptr)
+		return;
+
+	UDataTable* AttackInfoDataTable = GameInstance->GetMonsterAttackInfoDataTable(m_Name);
+	if (AttackInfoDataTable == nullptr)
+		return;
+
+	TArray<FMonsterAttackInfo*> AllRows;
+	AttackInfoDataTable->GetAllRows<FMonsterAttackInfo>(TEXT(""), AllRows);
+
+	TArray<FName> AllRowNames = AttackInfoDataTable->GetRowNames();
+
+	for (int32 i = 0; i < AllRows.Num(); i++)
+		m_AttackCooltimes.Add(AllRowNames[i], GetWorld()->GetTimeSeconds());
+}
+
+bool AMonster::PlayAttackSection(const FName& _SectionName)
+{
+	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GameInstance == nullptr)
 		return false;
 
-	PlayMontage(m_AttackMontage, m_AttackSectionNameList[_Index]);
-	m_CurPlayAttackIndex = _Index;
+	UDataTable* AttackInfoDataTable = GameInstance->GetMonsterAttackInfoDataTable(m_Name);
+	if (AttackInfoDataTable == nullptr)
+		return false;
+
+	FMonsterAttackInfo* AttackInfo = AttackInfoDataTable->FindRow<FMonsterAttackInfo>(_SectionName, TEXT(""));
+	if (m_AttackMontage == nullptr || AttackInfo == nullptr)
+		return false;
+
+	if (m_AttackCooltimes.Contains(_SectionName) == false)
+		return false;
+
+	float WorldTime = GetWorld()->GetTimeSeconds();
+	if (WorldTime < m_AttackCooltimes[_SectionName])
+		return false;
+
+	m_AttackCooltimes[_SectionName] = WorldTime + AttackInfo->Cooltime;
+
+	PlayMontage(m_AttackMontage, _SectionName);
+	m_CurPlayAttackSectionName = _SectionName;
+
+	m_IsAttacking = true;
 
 	return true;
 }
@@ -96,15 +146,28 @@ void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* 
 	if (Player == nullptr || Controller == nullptr)
 		return;
 
-	if (m_AttackInfoDataTable == nullptr)
+	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GameInstance == nullptr)
 		return;
 
-	FMonsterAttackInfo* AttackInfo = m_AttackInfoDataTable->FindRow<FMonsterAttackInfo>(FName(m_AttackSectionNameList[m_CurPlayAttackIndex]), TEXT(""));
+	UDataTable* AttackInfoDataTable = GameInstance->GetMonsterAttackInfoDataTable(m_Name);
+	if (AttackInfoDataTable == nullptr)
+		return;
+
+	FMonsterAttackInfo* AttackInfo = AttackInfoDataTable->FindRow<FMonsterAttackInfo>(m_CurPlayAttackSectionName, TEXT(""));
 	if (AttackInfo == nullptr)
 		return;
 
 	SpawnDamageText(Player, AttackInfo->Damage);
 	UGameplayStatics::ApplyDamage(Player, AttackInfo->Damage, Controller, this, UDamageType::StaticClass());
+}
+
+void AMonster::OnAttackMontageEnded(UAnimMontage* _Montage, bool _bInterrupted)
+{
+	if (_Montage != m_AttackMontage)
+		return;
+
+	m_IsAttacking = false;
 }
 
 void AMonster::RightWeaponCollisionEnable()
@@ -137,12 +200,4 @@ void AMonster::LeftWeaponCollisionDisable()
 		return;
 
 	m_LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
-
-void AMonster::SetAttackSectionName(int32 _Index, FName _SectionName)
-{
-	if (_Index < 0 || m_AttackSectionNameList.Num() <= _Index)
-		return;
-
-	m_AttackSectionNameList[_Index] = _SectionName;
 }

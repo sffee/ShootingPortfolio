@@ -15,7 +15,18 @@ EBTNodeResult::Type UTask_Attack::ExecuteTask(UBehaviorTreeComponent& _OwnerComp
 	if (Monster == nullptr)
 		return EBTNodeResult::Failed;
 
-	if (Monster->PlayAttackIndex(m_AttackIndex) == false)
+	UBlackboardComponent* MonsterBlackboardComponent = MonsterController->GetBlackboardComponent();
+	if (MonsterBlackboardComponent == nullptr)
+		return EBTNodeResult::Failed;
+
+	AActor* Target = Cast<AActor>(MonsterBlackboardComponent->GetValueAsObject(TEXT("Target")));
+	if (Target == nullptr)
+		return EBTNodeResult::Failed;
+
+	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(Monster->GetActorLocation(), Target->GetActorLocation());
+	Monster->SetActorRotation(Rot);
+
+	if (Monster->PlayAttackSection(m_AttackSectionName) == false)
 		return EBTNodeResult::Failed;
 
 	MonsterController->StopMovement();

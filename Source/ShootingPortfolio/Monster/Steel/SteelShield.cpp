@@ -22,7 +22,7 @@ ASteelShield::ASteelShield()
 	if (HitParticle.Succeeded())
 		m_HitParticle = HitParticle.Object;
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TransMaterial(TEXT("Material'/Game/Game/Asset/Material/Transparent.Transparent'"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TransMaterial(TEXT("Material'/Game/Game/Asset/Material/MT_Transparent.MT_Transparent'"));
 	if (TransMaterial.Succeeded())
 	{
 		for (int32 i = 0; i < 8; i++)

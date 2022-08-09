@@ -13,7 +13,7 @@ class SHOOTINGPORTFOLIO_API UTask_Attack : public UBTTaskNode
 	
 private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
-	int32 m_AttackIndex;
+	FName m_AttackSectionName;
 	
 public:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& _OwnerComp, uint8* _NodeMemory) override;

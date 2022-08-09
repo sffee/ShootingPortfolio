@@ -4,7 +4,8 @@
 #include <AIController.h>
 
 UDecorator_DistanceToTarget::UDecorator_DistanceToTarget()
-	: m_CheckDistance(0.f)
+	: m_MinDistance(0.f)
+	, m_MaxDistance(0.f)
 {
 
 }
@@ -28,7 +29,7 @@ bool UDecorator_DistanceToTarget::CalculateRawConditionValue(UBehaviorTreeCompon
 		return false;
 
 	float Distance = FVector::Distance(Target->GetActorLocation(), Monster->GetActorLocation());
-	if (Distance <= m_CheckDistance)
+	if (m_MinDistance <= Distance && Distance <= m_MaxDistance)
 		return true;
 
 	return false;

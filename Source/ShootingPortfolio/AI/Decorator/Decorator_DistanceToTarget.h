@@ -13,7 +13,10 @@ class SHOOTINGPORTFOLIO_API UDecorator_DistanceToTarget : public UBTDecorator
 	
 private:
 	UPROPERTY(EditAnywhere, Category = Condition, meta = (AllowPrivateAccess = "true"))
-	float m_CheckDistance;
+	float m_MinDistance;
+
+	UPROPERTY(EditAnywhere, Category = Condition, meta = (AllowPrivateAccess = "true"))
+	float m_MaxDistance;
 
 public:
 	UDecorator_DistanceToTarget();

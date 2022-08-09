@@ -11,7 +11,7 @@ class SHOOTINGPORTFOLIO_API UMonsterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	
-private:
+protected:
 	UPROPERTY()
 	AMonster* m_Monster;
 

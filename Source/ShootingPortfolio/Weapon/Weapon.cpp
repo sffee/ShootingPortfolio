@@ -24,6 +24,7 @@ AWeapon::AWeapon()
 	m_Mesh->SetEnableGravity(false);
 
 	m_Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	m_Mesh->bReceivesDecals = false;
 }
 
 void AWeapon::BeginPlay()

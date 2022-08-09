@@ -89,6 +89,8 @@ APlayerCharacter::APlayerCharacter()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> EquipWeaponMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/EquipWeaponMontage.EquipWeaponMontage'"));
 	if (EquipWeaponMontage.Succeeded())
 		m_EquipWeaponAnimMontage = EquipWeaponMontage.Object;
+
+	GetMesh()->bReceivesDecals = false;
 }
 
 void APlayerCharacter::BeginPlay()

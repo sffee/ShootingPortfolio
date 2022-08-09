@@ -8,3 +8,6 @@
 *_BuiltData.uasset
 *.csv
 bfg.jar
+/Platforms
+/hooks
+/info

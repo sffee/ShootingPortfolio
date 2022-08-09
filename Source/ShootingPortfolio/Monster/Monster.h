@@ -23,6 +23,10 @@ public:
 	FSpawnMonsterDieDelegate m_MonsterDieDelegate;
 
 protected:
+	UPROPERTY(VisibleAnywhere)
+	FName m_Name;
+
+protected:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* m_RightWeaponCollision;
 
@@ -30,17 +34,16 @@ protected:
 	UBoxComponent* m_LeftWeaponCollision;
 	
 protected:
-	UPROPERTY(EditAnywhere, Category = Attack)
-	UDataTable* m_AttackInfoDataTable;
-
-	UPROPERTY(EditAnywhere, Category = Attack)
-	TArray<FName> m_AttackSectionNameList;
+	UPROPERTY(VisibleAnywhere, Category = Attack)
+	TMap<FName, float> m_AttackCooltimes;
 
 	UPROPERTY(EditAnywhere, Category = Attack)
 	UAnimMontage* m_AttackMontage;
 
 	UPROPERTY(VisibleAnywhere, Category = Attack)
-	int32 m_CurPlayAttackIndex;
+	FName m_CurPlayAttackSectionName;
+
+	bool m_IsAttacking;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Status)
@@ -66,8 +69,11 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+private:
+	void InitAttackInfoDataTable();
+
 public:
-	bool PlayAttackIndex(int32 _Index);
+	bool PlayAttackSection(const FName& _SectionName);
 
 public:
 	void PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName);
@@ -80,6 +86,9 @@ protected:
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult);
 
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* _Montage, bool _bInterrupted);
+
 public:
 	virtual void RightWeaponCollisionEnable();
 	virtual void RightWeaponCollisionDisable();
@@ -87,11 +96,9 @@ public:
 	virtual void LeftWeaponCollisionDisable();
 
 public:
-	void SetAttackSectionName(int32 _Index, FName _SectionName);
-
-public:
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return m_BehaviorTree; }
 	FORCEINLINE UBlackboardData* GetBlackboard() const { return m_Blackboard; }
 	FORCEINLINE UBoxComponent* GetRightWeaponCollsiion() const { return m_RightWeaponCollision; }
 	FORCEINLINE UParticleSystem* GetHitParticle() const { return m_HitParticle; }
+	FORCEINLINE bool IsAttacking() const { return m_IsAttacking; }
 };

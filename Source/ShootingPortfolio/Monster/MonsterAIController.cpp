@@ -11,6 +11,8 @@ AMonsterAIController::AMonsterAIController()
 void AMonsterAIController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnPossess(GetPawn());
 }
 
 void AMonsterAIController::OnPossess(APawn* _Monster)

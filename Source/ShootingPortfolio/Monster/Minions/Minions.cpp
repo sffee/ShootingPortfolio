@@ -32,10 +32,6 @@ AMinions::AMinions()
 	if (HitParticle.Succeeded())
 		m_HitParticle = HitParticle.Object;
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> AttackInfoDataTable(TEXT("DataTable'/Game/Game/Blueprints/Monster/Minions/DataTable/MinionsAttackInfoDataTable.MinionsAttackInfoDataTable'"));
-	if (AttackInfoDataTable.Succeeded())
-		m_AttackInfoDataTable = AttackInfoDataTable.Object;
-
 	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -74.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
 
@@ -47,7 +43,7 @@ AMinions::AMinions()
 
 	m_Status.MaxHP = 30;
 
-	m_AttackSectionNameList.Add(FName("Attack"));
+	m_Name = TEXT("Minions");
 }
 
 void AMinions::BeginPlay()

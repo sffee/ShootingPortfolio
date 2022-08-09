@@ -42,13 +42,9 @@ ASteel::ASteel()
 	if (Shield.Succeeded())
 		m_ShieldClass = Shield.Class;
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TransMaterial(TEXT("Material'/Game/Game/Asset/Material/Transparent.Transparent'"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TransMaterial(TEXT("Material'/Game/Game/Asset/Material/MT_Transparent.MT_Transparent'"));
 	if (TransMaterial.Succeeded())
 		GetMesh()->SetMaterial(8, TransMaterial.Object);
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> AttackInfoDataTable(TEXT("DataTable'/Game/Game/Blueprints/Monster/Steel/DataTable/SteelAttackInfoDataTable.SteelAttackInfoDataTable'"));
-	if (AttackInfoDataTable.Succeeded())
-		m_AttackInfoDataTable = AttackInfoDataTable.Object;
 
 	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -74.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
@@ -65,7 +61,7 @@ ASteel::ASteel()
 
 	m_Status.MaxHP = 30;
 
-	m_AttackSectionNameList.Add(FName("ShieldAttack"));
+	m_Name = TEXT("Steel");
 }
 
 void ASteel::BeginPlay()
@@ -141,7 +137,6 @@ void ASteel::SetSteelState(ESteelState _State)
 		break;
 	case ESteelState::Idle:
 		GetCharacterMovement()->MaxWalkSpeed = 500.f;
-		SetAttackSectionName(0, FName("IdleAttack"));
 		break;
 	default:
 		break;
