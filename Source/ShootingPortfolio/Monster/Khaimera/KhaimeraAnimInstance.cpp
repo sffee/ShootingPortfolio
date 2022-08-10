@@ -30,7 +30,7 @@ void UKhaimeraAnimInstance::AnimNotify_Jump()
 {
 	AKhaimera* Monster = Cast<AKhaimera>(TryGetPawnOwner());
 	AActor* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	if (m_Monster || Player)
+	if (m_Monster && Player)
 	{
 		m_DownAttackLocation = Player->GetActorLocation() + (Player->GetActorForwardVector() * 200.f);
 		
@@ -64,5 +64,19 @@ void UKhaimeraAnimInstance::AnimNotify_DestroyWarningMark()
 	if (Monster)
 	{
 		Monster->DestroyWarningMark();
+	}
+}
+
+void UKhaimeraAnimInstance::AnimNotify_Dash()
+{
+	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
+	AActor* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (m_Monster && Player)
+	{
+		FVector DashLocation = Player->GetActorLocation() + (Player->GetActorForwardVector() * 150.f);
+
+		FLatentActionInfo Info;
+		Info.CallbackTarget = this;
+		UKismetSystemLibrary::MoveComponentTo(m_Monster->GetRootComponent(), DashLocation, m_Monster->GetRootComponent()->GetRelativeRotation(), true, true, 0.3f, false, EMoveComponentAction::Type::Move, Info);
 	}
 }

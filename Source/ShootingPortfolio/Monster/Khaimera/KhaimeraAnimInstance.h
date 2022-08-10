@@ -36,4 +36,7 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_DestroyWarningMark();
+
+	UFUNCTION()
+	void AnimNotify_Dash();
 };

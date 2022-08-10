@@ -31,5 +31,25 @@ EBTNodeResult::Type UTask_Attack::ExecuteTask(UBehaviorTreeComponent& _OwnerComp
 
 	MonsterController->StopMovement();
 
-	return EBTNodeResult::Succeeded;
+	bNotifyTick = true;
+
+	return EBTNodeResult::InProgress;
+}
+
+void UTask_Attack::TickTask(UBehaviorTreeComponent& _OwnerComp, uint8* _NodeMemory, float _DeltaSeconds)
+{
+	Super::TickTask(_OwnerComp, _NodeMemory, _DeltaSeconds);
+
+	AAIController* MonsterController = _OwnerComp.GetAIOwner();
+	if (MonsterController == nullptr)
+		return;
+
+	AMonster* Monster = Cast<AMonster>(MonsterController->GetPawn());
+	if (Monster == nullptr)
+		return;
+
+	if (Monster->IsAttacking())
+		return;
+
+	return FinishLatentTask(_OwnerComp, EBTNodeResult::Succeeded);
 }
