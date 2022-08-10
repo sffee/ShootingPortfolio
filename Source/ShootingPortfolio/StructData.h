@@ -62,6 +62,20 @@ struct FMonsterStatus
 
 	UPROPERTY(EditAnywhere)
 	float MaxHP;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurShield;
+
+	UPROPERTY(EditAnywhere)
+	float MaxShield;
+
+	FMonsterStatus()
+		: CurHP(0.f)
+		, MaxHP(0.f)
+		, CurShield(0.f)
+		, MaxShield(0.f)
+	{
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -109,6 +123,15 @@ struct FMonsterAttackInfo : public FTableRowBase
 	
 	UPROPERTY(EditAnywhere)
 	float Damage;
+
+	UPROPERTY(EditAnywhere)
+	float Cooltime;
+};
+
+USTRUCT(BlueprintType)
+struct FMonsterBuffInfo : public FTableRowBase
+{
+	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
 	float Cooltime;

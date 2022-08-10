@@ -30,7 +30,8 @@ AMonster::AMonster()
 	m_LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetCapsuleComponent()->SetCollisionProfileName(FName("Monster"));
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionProfileName(FName("Monster"));
+	GetMesh()->SetCollisionResponseToChannel(COLLISION_PLAYER, ECR_Ignore);
 
 	GetMesh()->bReceivesDecals = false;
 }
@@ -43,6 +44,7 @@ void AMonster::BeginPlay()
 	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	m_Status.CurHP = m_Status.MaxHP;
+	m_Status.CurShield = m_Status.MaxShield;
 
 	m_RightWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
 	m_LeftWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
@@ -137,7 +139,23 @@ void AMonster::SpawnDamageText(const APlayerCharacter* _Player, float _Damage)
 
 void AMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
 {
-	m_Status.CurHP -= _Damage;
+	float Damage = _Damage;
+
+	if (0.f < m_Status.CurShield)
+	{
+		if (m_Status.CurShield <= Damage)
+		{
+			Damage -= m_Status.CurShield;
+			m_Status.CurShield = 0.f;
+		}
+		else
+		{
+			m_Status.CurShield -= Damage;
+			Damage = 0.f;
+		}
+	}
+
+	m_Status.CurHP -= Damage;
 }
 
 void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)

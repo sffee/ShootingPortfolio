@@ -1,8 +1,14 @@
 #include "Khaimera.h"
 
+#include <AIController.h>
 #include "ShootingPortfolio/Decal/WarningMark.h"
+#include "ShootingPortfolio/Monster/Khaimera/SpawnMonster/SpawnMonsterCircle.h"
+#include "ShootingPortfolio/UI/BossMonsterHPBarWidget.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 
 AKhaimera::AKhaimera()
+	: m_SpawnMonsterPattern(false)
 {
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> KhaimeraMesh(TEXT("SkeletalMesh'/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Skins/Tier2/GruxPelt/Meshes/Khaimera_GruxPelt.Khaimera_GruxPelt'"));
 	if (KhaimeraMesh.Succeeded())
@@ -32,13 +38,23 @@ AKhaimera::AKhaimera()
 	if (WarningMark.Succeeded())
 		m_WarningMarkClass = WarningMark.Class;
 
-	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -74.f));
+	static ConstructorHelpers::FClassFinder<AActor> SpawnMonsterCircle(TEXT("Blueprint'/Game/Game/Blueprints/Monster/Khaimera/BP_SpawnMonsterCircle.BP_SpawnMonsterCircle_C'"));
+	if (SpawnMonsterCircle.Succeeded())
+		m_SpawnMonsterCircleClass = SpawnMonsterCircle.Class;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> BossMonsterHPBarWidget(TEXT("WidgetBlueprint'/Game/Game/Blueprints/UI/WBP_BossMonsterHPBar.WBP_BossMonsterHPBar_C'"));
+	if (BossMonsterHPBarWidget.Succeeded())
+		m_BossMonsterHPBarWidgetClass = BossMonsterHPBarWidget.Class;
+
+	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -142.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
+	GetMesh()->bComponentUseFixedSkelBounds = true;
 
-	GetCapsuleComponent()->SetCapsuleHalfHeight(70.f);
-	GetCapsuleComponent()->SetCapsuleRadius(38.f);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(140.f);
+	GetCapsuleComponent()->SetCapsuleRadius(50.f);
 
-	m_Status.MaxHP = 1000;
+	m_Status.MaxHP = 100;
+	m_Status.MaxShield = 50.f;
 
 	m_Name = TEXT("Khaimera");
 }
@@ -46,6 +62,27 @@ AKhaimera::AKhaimera()
 void AKhaimera::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (m_BossMonsterHPBarWidgetClass)
+	{
+		m_BossMonsterHPBarWidget = CreateWidget<UBossMonsterHPBarWidget>(GetWorld(), m_BossMonsterHPBarWidgetClass);
+		if (m_BossMonsterHPBarWidget)
+		{
+			m_BossMonsterHPBarWidget->AddToViewport();
+			m_BossMonsterHPBarWidget->BossMonsterName->SetText(FText::FromName(m_Name));
+		}
+
+		UpdateHPBarWidget();
+		UpdateShieldBarWidget();
+	}
+
+	AAIController* AIController = Cast<AAIController>(Controller);
+	if (AIController)
+	{
+		UBlackboardComponent* BlackboardComponent = AIController->GetBlackboardComponent();
+		if (BlackboardComponent)
+			BlackboardComponent->SetValueAsBool(TEXT("SpawnMonster"), false);
+	}
 }
 
 void AKhaimera::CreateWarningMark(const FVector& _Location)
@@ -62,4 +99,50 @@ void AKhaimera::DestroyWarningMark()
 		return;
 
 	m_WarningMark->Destroy();
+}
+
+void AKhaimera::UpdateHPBarWidget()
+{
+	if (m_BossMonsterHPBarWidget == nullptr)
+		return;
+
+	float HPPercent = m_Status.CurHP / m_Status.MaxHP;
+	m_BossMonsterHPBarWidget->HPBar->SetPercent(HPPercent);
+}
+
+void AKhaimera::UpdateShieldBarWidget()
+{
+	if (m_BossMonsterHPBarWidget == nullptr)
+		return;
+
+	float ShieldPercent = m_Status.CurShield / m_Status.MaxShield;
+	m_BossMonsterHPBarWidget->ShieldBar->SetPercent(ShieldPercent);
+}
+
+void AKhaimera::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
+{
+	bool IsUpdateShieldBar = 0.f < m_Status.CurShield ? true : false;
+	
+	Super::ReceiveDamage(_DamagedActor, _Damage, _DamageType, _InstigatorController, _DamageCauser);
+
+	UpdateHPBarWidget();
+	if (IsUpdateShieldBar)
+		UpdateShieldBarWidget();
+
+	if (m_SpawnMonsterPattern == false)
+	{
+		float HPPercent = m_Status.CurHP / m_Status.MaxHP;
+		if (HPPercent <= 0.5f)
+		{
+			m_SpawnMonsterPattern = true;
+
+			AAIController* AIController = Cast<AAIController>(Controller);
+			if (AIController)
+			{
+				UBlackboardComponent* BlackboardComponent = AIController->GetBlackboardComponent();
+				if (BlackboardComponent)
+					BlackboardComponent->SetValueAsBool(TEXT("SpawnMonster"), true);
+			}
+		}
+	}
 }

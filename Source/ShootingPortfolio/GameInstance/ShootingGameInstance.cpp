@@ -34,3 +34,11 @@ UDataTable* UShootingGameInstance::GetMonsterAttackInfoDataTable(const FName& _M
 
 	return m_MonsterAttackInfoDataTables[_MonsterName];
 }
+
+UDataTable* UShootingGameInstance::GetMonsterBuffInfoDataTable(const FName& _MonsterName) const
+{
+	if (m_MonsterBuffInfoDataTables.Contains(_MonsterName) == false)
+		return nullptr;
+
+	return m_MonsterBuffInfoDataTables[_MonsterName];
+}

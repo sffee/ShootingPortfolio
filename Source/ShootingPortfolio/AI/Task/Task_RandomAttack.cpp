@@ -24,7 +24,7 @@ EBTNodeResult::Type UTask_RandomAttack::ExecuteTask(UBehaviorTreeComponent& _Own
 		return EBTNodeResult::Failed;
 
 	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(Monster->GetActorLocation(), Target->GetActorLocation());
-	Monster->SetActorRotation(Rot);
+	Monster->SetActorRotation(FRotator(0.f, Rot.Yaw, 0.f));
 
 	FRandomStream RandomStream;
 	RandomStream.GenerateNewSeed();

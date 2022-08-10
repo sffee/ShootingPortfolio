@@ -24,7 +24,7 @@ EBTNodeResult::Type UTask_Attack::ExecuteTask(UBehaviorTreeComponent& _OwnerComp
 		return EBTNodeResult::Failed;
 
 	FRotator Rot = UKismetMathLibrary::FindLookAtRotation(Monster->GetActorLocation(), Target->GetActorLocation());
-	Monster->SetActorRotation(Rot);
+	Monster->SetActorRotation(FRotator(0.f, Rot.Yaw, 0.f));
 
 	if (Monster->PlayAttackSection(m_AttackSectionName) == false)
 		return EBTNodeResult::Failed;

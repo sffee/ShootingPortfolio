@@ -18,10 +18,14 @@ private:
 	UPROPERTY(EditAnywhere, Category = Monster)
 	TMap<FName, UDataTable*> m_MonsterAttackInfoDataTables;
 
+	UPROPERTY(EditAnywhere, Category = Monster)
+	TMap<FName, UDataTable*> m_MonsterBuffInfoDataTables;
+
 public:
 	UShootingGameInstance();
 
 public:
 	FCrosshairTexture* GetCrosshairTexture(const FName& _TypeName) const;
 	UDataTable* GetMonsterAttackInfoDataTable(const FName& _MonsterName) const;
+	UDataTable* GetMonsterBuffInfoDataTable(const FName& _MonsterName) const;
 };

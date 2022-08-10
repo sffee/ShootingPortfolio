@@ -4,28 +4,43 @@
 #include "../MonsterAnimInstance.h"
 #include "KhaimeraAnimInstance.generated.h"
 
+class APlayerCharacter;
+class ASpawnMonsterCircle;
+
 UCLASS()
 class SHOOTINGPORTFOLIO_API UKhaimeraAnimInstance : public UMonsterAnimInstance
 {
 	GENERATED_BODY()
 	
-public:
-	UPROPERTY(EditAnywhere)
+private:
+	UPROPERTY()
+	APlayerCharacter* m_Player;
+	
+private:
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	FVector m_JumpVelocity;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float m_JumpAttackGravity;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	float m_JumpAttackAnimPauseGravity;
 
 	FVector m_DownAttackLocation;
 
+	bool m_IsLookAtPlayer;
+
+	TArray<ASpawnMonsterCircle*> m_SpawnMonsterCircles;
+
 public:
 	UKhaimeraAnimInstance();
 
+public:
+	virtual void NativeUpdateAnimation(float DeltaTime) override;
+
 private:
 	void DownAttack();
+	void LookAtPlayer(float _DeltaTime);
 
 public:
 	UFUNCTION()
@@ -39,4 +54,16 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_Dash();
+
+	UFUNCTION()
+	void AnimNotify_LookAtPlayer();
+
+	UFUNCTION()
+	void AnimNotify_LookAtPlayerEnd();
+
+	UFUNCTION()
+	void AnimNotify_SpawnCircle();
+
+	UFUNCTION()
+	void AnimNotify_SpawnMonsterHowl();
 };

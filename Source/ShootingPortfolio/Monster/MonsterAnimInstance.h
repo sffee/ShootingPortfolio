@@ -36,4 +36,10 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_LeftWeaponAttackEnd();
+
+	UFUNCTION()
+	void AnimNotify_Movable();
+
+	UFUNCTION()
+	void AnimNotify_MoveDisable();
 };

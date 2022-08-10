@@ -101,4 +101,5 @@ public:
 	FORCEINLINE UBoxComponent* GetRightWeaponCollsiion() const { return m_RightWeaponCollision; }
 	FORCEINLINE UParticleSystem* GetHitParticle() const { return m_HitParticle; }
 	FORCEINLINE bool IsAttacking() const { return m_IsAttacking; }
+	FORCEINLINE UAnimMontage* GetAttackAnimMontage() const { return m_AttackMontage; }
 };
