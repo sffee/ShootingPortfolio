@@ -11,6 +11,7 @@ class APlayerCharacter;
 class AShootingHUD;
 class AWeapon;
 class UWeaponSlotWidget;
+class AMonster;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API APlayerCharacterController : public APlayerController
@@ -95,6 +96,9 @@ public:
 
 public:
 	void AddWeapon(AWeapon* _Weapon);
+
+public:
+	void SetMonsterCountList(const TMap<UObject*, int32>& _MonsterMap);
 
 private:
 	UWeaponSlotWidget* GetWeaponSlotWidget(const AWeapon* _Weapon);

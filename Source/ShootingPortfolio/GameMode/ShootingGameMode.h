@@ -22,6 +22,7 @@ struct FMonsterSpawnPointData
 };
 
 class UPlayerOverlayWidget;
+class APlayerCharacterController;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API AShootingGameMode : public AGameModeBase
@@ -30,6 +31,7 @@ class SHOOTINGPORTFOLIO_API AShootingGameMode : public AGameModeBase
 	
 private:
 	UPlayerOverlayWidget* m_PlayerOverlayWidget;
+	APlayerCharacterController* m_PlayerController;
 	
 private:
 	UPROPERTY(EditAnywhere)
@@ -59,8 +61,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Wave)
 	bool m_SpawnComplete;
 
-private:
-	UPROPERTY(VisibleAnywhere, Category = "Wave | Countdown")
+	UPROPERTY(VisibleAnywhere, Category = Wave)
 	EWaveState m_WaveState;
 
 private:

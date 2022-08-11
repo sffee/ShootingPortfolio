@@ -102,4 +102,5 @@ public:
 	FORCEINLINE UParticleSystem* GetHitParticle() const { return m_HitParticle; }
 	FORCEINLINE bool IsAttacking() const { return m_IsAttacking; }
 	FORCEINLINE UAnimMontage* GetAttackAnimMontage() const { return m_AttackMontage; }
+	FORCEINLINE FName GetMonsterName() const { return m_Name; }
 };

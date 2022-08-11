@@ -8,6 +8,7 @@ class UHPStaminaWidget;
 class UAmmoWidget;
 class UWeaponInventoryWidget;
 class UTextBlock;
+class UWaveMonsterCountWidget;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API UPlayerOverlayWidget : public UUserWidget
@@ -33,12 +34,14 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UWeaponInventoryWidget* WeaponInventory;
 
+	UPROPERTY(meta = (BindWidget))
+	UWaveMonsterCountWidget* WaveMonsterCount;
+
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* WaveStartAnimation;
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* WaveCompleteAnimation;
-
 
 protected:
 	virtual void NativeConstruct() override;

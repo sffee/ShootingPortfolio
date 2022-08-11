@@ -38,8 +38,6 @@ void AShootingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	return;
-
 	InitSpawnPointMap();
 
 	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
@@ -48,14 +46,6 @@ void AShootingGameMode::BeginPlay()
 void AShootingGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	FString Str = FString::Printf(TEXT("Monster : %d"), m_AliveMonsterCount);
-	GEngine->AddOnScreenDebugMessage(0, 999.f, FColor::Blue, *Str);
-
-	if (m_SpawnComplete)
-	{
-		GEngine->AddOnScreenDebugMessage(1, 999.f, FColor::Blue, TEXT("Spawn Complete"));
-	}
 }
 
 void AShootingGameMode::GameStartTimerEnd()
@@ -65,20 +55,20 @@ void AShootingGameMode::GameStartTimerEnd()
 
 void AShootingGameMode::StartWaveCountdown()
 {
-	APlayerCharacterController* PlayerController = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PlayerController == nullptr)
+	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
+	if (m_PlayerController == nullptr)
 		return;
 
-	PlayerController->SetWaveState(EWaveState::Countdown);
+	m_PlayerController->SetWaveState(EWaveState::Countdown);
 }
 
 void AShootingGameMode::StartWaveComplete()
 {
-	APlayerCharacterController* PlayerController = Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PlayerController == nullptr)
+	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
+	if (m_PlayerController == nullptr)
 		return;
 
-	PlayerController->SetWaveState(EWaveState::Complete);
+	m_PlayerController->SetWaveState(EWaveState::Complete);
 }
 
 void AShootingGameMode::InitSpawnPointMap()
@@ -158,6 +148,8 @@ void AShootingGameMode::SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int3
 		return;
 	}
 	
+	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
+	
 	for (int32 i = 0; i < m_SpawnPointCount; i++)
 	{
 		SpawnMonster(_Monster, m_SpawnPointMap[i]);
@@ -166,7 +158,10 @@ void AShootingGameMode::SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int3
 		m_AliveMonsterMap[_Monster->GetDefaultObject()]++;
 		m_AliveMonsterCount++;
 		m_SpawnCompleteMonsterCount++;
-		
+
+		if (m_PlayerController)
+			m_PlayerController->SetMonsterCountList(m_AliveMonsterMap);
+
 		if (m_SpawnCompleteMonsterCount == m_NeedSpawnMonsterCount)
 			m_SpawnComplete = true;
 
@@ -210,6 +205,10 @@ void AShootingGameMode::Delegate_MonsterDie(UObject* _Monster)
 
 	m_AliveMonsterMap[_Monster]--;
 	m_AliveMonsterCount--;
+
+	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
+	if (m_PlayerController)
+		m_PlayerController->SetMonsterCountList(m_AliveMonsterMap);
 
 	if (m_SpawnComplete && m_AliveMonsterCount <= 0)
 	{

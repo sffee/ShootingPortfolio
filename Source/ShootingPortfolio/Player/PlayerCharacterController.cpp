@@ -6,14 +6,18 @@
 #include "ShootingPortfolio/UI/PlayerOverlayWidget.h"
 #include "ShootingPortfolio/UI/WeaponSlotWidget.h"
 #include "ShootingPortfolio/UI/WeaponInventoryWidget.h"
+#include "ShootingPortfolio/UI/WaveMonsterCountWidget.h"
+#include "ShootingPortfolio/UI/MonsterCountBlockWidget.h"
 #include "ShootingPortfolio/Weapon/Weapon.h"
 #include "ShootingPortfolio/Monster/Monster.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/ListView.h"
 #include "ShootingPortfolio/GameMode/ShootingGameMode.h"
+#include "ShootingPortfolio/Monster/SpawnMonsterData.h"
 
 APlayerCharacterController::APlayerCharacterController()
-	: m_StartWaveCountTime(0.f)
+	: m_StartWaveCountTime(5.f)
 	, m_RemainingWaveCountTime(0.f)
 	, m_PrevReminingWaveCountTime(0.f)
 	, m_FirstHUDUpdateComplete(false)
@@ -117,7 +121,8 @@ void APlayerCharacterController::WavePlay()
 	if (m_HUD == nullptr ||
 		m_HUD->m_PlayerOverlayWidget == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText == nullptr ||
-		m_HUD->m_PlayerOverlayWidget->WaveNumberText == nullptr)
+		m_HUD->m_PlayerOverlayWidget->WaveNumberText == nullptr ||
+		m_HUD->m_PlayerOverlayWidget->WaveMonsterCount == nullptr)
 		return;
 
 	AShootingGameMode* GameMode = Cast<AShootingGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -130,6 +135,8 @@ void APlayerCharacterController::WavePlay()
 	FString WaveStr = FString::Printf(TEXT("Wave %d"), GameMode->GetWaveNumber());
 	m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetText(FText::FromString(WaveStr));
 
+	m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->SetVisibility(ESlateVisibility::Visible);
+
 	GameMode->SpawnStart();
 }
 
@@ -140,13 +147,15 @@ void APlayerCharacterController::WaveComplete()
 		m_HUD->m_PlayerOverlayWidget == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveNumberText == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText == nullptr ||
-		m_HUD->m_PlayerOverlayWidget->WaveCompleteAnimation == nullptr)
+		m_HUD->m_PlayerOverlayWidget->WaveCompleteAnimation == nullptr ||
+		m_HUD->m_PlayerOverlayWidget->WaveMonsterCount == nullptr)
 		return;
 
 	m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetVisibility(ESlateVisibility::Hidden);
 	m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetVisibility(ESlateVisibility::Visible);
 	m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetText(FText::FromString(FString("Wave Complete!")));
 	m_HUD->m_PlayerOverlayWidget->PlayAnimation(m_HUD->m_PlayerOverlayWidget->WaveCompleteAnimation);
+	m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->SetVisibility(ESlateVisibility::Hidden);
 
 	GetWorldTimerManager().SetTimer(m_WaveTimer, this, &APlayerCharacterController::WaveCompleteTimerEnd, m_HUD->m_PlayerOverlayWidget->WaveCompleteAnimation->GetEndTime());
 }
@@ -361,6 +370,31 @@ void APlayerCharacterController::AddWeapon(AWeapon* _Weapon)
 
 	if (m_WeaponInventory.Num() == 1)
 		PlayChangeWeaponAnimation(nullptr, _Weapon);
+}
+
+void APlayerCharacterController::SetMonsterCountList(const TMap<UObject*, int32>& _MonsterMap)
+{
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD == nullptr ||
+		m_HUD->m_PlayerOverlayWidget == nullptr ||
+		m_HUD->m_PlayerOverlayWidget->WaveMonsterCount == nullptr ||
+		m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->MonsterList == nullptr)
+		return;
+
+	m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->MonsterList->ClearListItems();
+
+	for (const auto& Map : _MonsterMap)
+	{
+		AMonster* Monster = Cast<AMonster>(Map.Key);
+		if (Monster == nullptr || Map.Value == 0)
+			continue;
+
+		USpawnMonsterData* Data = NewObject<USpawnMonsterData>();
+		Data->SetMonsterName(Monster->GetMonsterName());
+		Data->SetSpawnCount(Map.Value);
+
+		m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->MonsterList->AddItem(Data);
+	}
 }
 
 UWeaponSlotWidget* APlayerCharacterController::GetWeaponSlotWidget(const AWeapon* _Weapon)

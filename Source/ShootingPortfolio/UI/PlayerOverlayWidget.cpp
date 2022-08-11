@@ -2,6 +2,7 @@
 
 #include "HPStaminaWidget.h"
 #include "AmmoWidget.h"
+#include "WaveMonsterCountWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
@@ -12,6 +13,7 @@ void UPlayerOverlayWidget::NativeConstruct()
 	WaveCountdownText->SetVisibility(ESlateVisibility::Hidden);
 	WaveNumberText->SetVisibility(ESlateVisibility::Hidden);
 	WaveStartCompleteText->SetVisibility(ESlateVisibility::Hidden);
+	WaveMonsterCount->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UPlayerOverlayWidget::SetHP(float _CurHP, float _MaxHP)
