@@ -25,8 +25,10 @@ APlayerCharacter::APlayerCharacter()
 	, m_ZoomReleaseSpeed(20.f)
 	, m_CanDamage(true)
 	, m_CanDamageTimeRate(0.8f)
-	, m_IsMoveForward(false)
-	, m_IsMoveSide(false)
+	, m_PressMoveForwardButton(false)
+	, m_PressMoveBackButton(false)
+	, m_PressMoveLeftButton(false)
+	, m_PressMoveRightButton(false)
 	, m_AimingButton(false)
 	, m_IsAiming(false)
 	, m_FireButtonPress(false)
@@ -41,6 +43,7 @@ APlayerCharacter::APlayerCharacter()
 	, m_AOYaw(0.f)
 	, m_AOPitch(0.f)
 	, m_UseRotationRootBone(true)
+	, m_RollDiveMove(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -102,7 +105,7 @@ void APlayerCharacter::BeginPlay()
 	APlayerCameraManager* CameraManager = Cast<APlayerCharacterController>(Controller)->PlayerCameraManager;
 	if (CameraManager)
 	{
-		CameraManager->ViewPitchMax = 20.f;
+		CameraManager->ViewPitchMax = 30.f;
 		CameraManager->ViewPitchMin = -30.f;
 	}
 
@@ -139,6 +142,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	UpdateTraceHitResult();
 	UpdateCrosshairColor();
 	UpdateStamina(DeltaTime);
+	UpdateRollDiveMove(DeltaTime);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -161,6 +165,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::SprintButtonPressed);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::SprintButtonReleased);
 
+	PlayerInputComponent->BindAction("RollDive", IE_Pressed, this, &APlayerCharacter::RollDiveButtonPressed);
+
 	PlayerInputComponent->BindAction("Key1", IE_Pressed, this, &APlayerCharacter::Key1ButtonPressed);
 	PlayerInputComponent->BindAction("Key2", IE_Pressed, this, &APlayerCharacter::Key2ButtonPressed);
 
@@ -168,6 +174,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::MoveForward(float _Value)
 {
+	if (m_State == EPlayerState::RollDive)
+		return;
+
 	if (_Value == 0.f)
 	{
 		if (m_IsSprint)
@@ -176,7 +185,8 @@ void APlayerCharacter::MoveForward(float _Value)
 		return;
 	}
 	
-	m_IsMoveForward = _Value == 1.f ? true : false;
+	m_PressMoveForwardButton = _Value == 1.f ? true : false;
+	m_PressMoveBackButton = _Value == -1.f ? true : false;
 
 	const FRotator Rotation(Controller->GetControlRotation());
 	const FRotator RotationYaw(0.f, Rotation.Yaw, 0.f);
@@ -187,8 +197,14 @@ void APlayerCharacter::MoveForward(float _Value)
 
 void APlayerCharacter::MoveRight(float _Value)
 {
+	if (m_State == EPlayerState::RollDive)
+		return;
+
 	if (_Value == 0.f || m_State == EPlayerState::Sprint)
 		return;
+
+	m_PressMoveRightButton = _Value == 1.f ? true : false;
+	m_PressMoveLeftButton = _Value == -1.f ? true : false;
 
 	const FRotator Rotation(Controller->GetControlRotation());
 	const FRotator RotationYaw(0.f, Rotation.Yaw, 0.f);
@@ -199,6 +215,9 @@ void APlayerCharacter::MoveRight(float _Value)
 
 void APlayerCharacter::Turn(float _Value)
 {
+	if (m_State == EPlayerState::RollDive)
+		return;
+
 	float TurnRate = m_IsAiming ? m_AimingTurnRate : m_TurnRate;
 
 	AddControllerYawInput(_Value * TurnRate * GetWorld()->GetDeltaSeconds());
@@ -206,6 +225,9 @@ void APlayerCharacter::Turn(float _Value)
 
 void APlayerCharacter::LookUp(float _Value)
 {
+	if (m_State == EPlayerState::RollDive)
+		return;
+
 	float LookUpRate = m_IsAiming ? m_AimingLookUpRate : m_LookUpRate;
 
 	AddControllerPitchInput(_Value * LookUpRate * GetWorld()->GetDeltaSeconds());
@@ -254,6 +276,14 @@ void APlayerCharacter::SprintButtonReleased()
 	m_SprintButtonPress = false;
 }
 
+void APlayerCharacter::RollDiveButtonPressed()
+{
+	if (m_State == EPlayerState::RollDive)
+		return;
+
+	RollDive();
+}
+
 void APlayerCharacter::Key1ButtonPressed()
 {
 	ChangeWeapon(m_EquipWeapon, 0);
@@ -298,7 +328,7 @@ void APlayerCharacter::EquipWeapon(AWeapon* _Weapon)
 
 void APlayerCharacter::Aiming()
 {
-	if (m_State == EPlayerState::Reloading || m_State == EPlayerState::Sprint)
+	if (m_State != EPlayerState::Idle)
 		return;
 
 	m_IsAiming = true;
@@ -319,6 +349,9 @@ void APlayerCharacter::StopAiming()
 void APlayerCharacter::Fire()
 {
 	if (m_EquipWeapon == nullptr)
+		return;
+	
+	if (m_State == EPlayerState::Equipping || m_State == EPlayerState::RollDive)
 		return;
 
 	if (m_State != EPlayerState::Idle)
@@ -363,6 +396,9 @@ void APlayerCharacter::Reloading()
 	if (m_EquipWeapon == nullptr)
 		return;
 
+	if (m_State == EPlayerState::Equipping || m_State == EPlayerState::RollDive)
+		return;
+
 	if (m_State != EPlayerState::Idle)
 	{
 		if (m_State == EPlayerState::Sprint)
@@ -383,7 +419,7 @@ void APlayerCharacter::Reloading()
 
 void APlayerCharacter::Sprint()
 {
-	if (m_IsMoveForward == false)
+	if (m_PressMoveForwardButton == false)
 		return;
 
 	if (m_State != EPlayerState::Idle && m_State != EPlayerState::Sprint)
@@ -421,8 +457,30 @@ void APlayerCharacter::DamageTimerEnd()
 	m_CanDamage = true;
 }
 
+void APlayerCharacter::RollDive()
+{
+	if (m_IsAiming)
+		StopAiming();
+
+	if (m_IsSprint)
+		StopSprint();
+	
+	m_State = EPlayerState::RollDive;
+	m_RollDiveMove = true;
+
+	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->MaxWalkSpeed;
+}
+
+void APlayerCharacter::RollDiveFinish()
+{
+	m_State = EPlayerState::Idle;
+}
+
 void APlayerCharacter::ReloadFinish()
 {
+	if (m_State != EPlayerState::Reloading)
+		return;
+
 	m_State = EPlayerState::Idle;
 
 	if (m_AimingButton)
@@ -437,6 +495,9 @@ void APlayerCharacter::ReloadFinish()
 
 void APlayerCharacter::EquipFinish()
 {
+	if (m_State != EPlayerState::Equipping)
+		return;
+
 	m_State = EPlayerState::Idle;
 
 	if (m_FireButtonPress)
@@ -448,7 +509,7 @@ void APlayerCharacter::EquipFinish()
 
 void APlayerCharacter::ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex)
 {
-	if (m_State == EPlayerState::Sprint)
+	if (m_State == EPlayerState::Sprint || m_State == EPlayerState::RollDive)
 		return;
 
 	if (m_IsAiming)
@@ -603,6 +664,14 @@ void APlayerCharacter::UpdateStamina(float _DeltaTime)
 		m_Controller->AddStamina(-_DeltaTime * m_StaminaRestoreSpeed);
 	else if (m_StaminaRestore)
 		m_Controller->AddStamina(_DeltaTime * m_StaminaRestoreSpeed);
+}
+
+void APlayerCharacter::UpdateRollDiveMove(float _DeltaTime)
+{
+	if (m_RollDiveMove == false)
+		return;
+
+	AddMovementInput(GetActorForwardVector(), 1.f);
 }
 
 void APlayerCharacter::StartStaminaRestore()

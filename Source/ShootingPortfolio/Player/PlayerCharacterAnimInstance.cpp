@@ -52,7 +52,7 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	EPlayerState PlayerState = m_Player->GetState();
 
 	m_UseAimOffset = PlayerState == EPlayerState::Idle;
-	m_UseFABRIK = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Sprint;
+	m_UseFABRIK = PlayerState == EPlayerState::Idle || PlayerState == EPlayerState::Sprint || PlayerState == EPlayerState::RollDive;
 }
 
 void UPlayerCharacterAnimInstance::CalcYaw(float _DeltaTime)
@@ -99,4 +99,18 @@ void UPlayerCharacterAnimInstance::AnimNotify_EquipFinish()
 	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(TryGetPawnOwner()) : m_Player;
 	if (m_Player)
 		m_Player->EquipFinish();
+}
+
+void UPlayerCharacterAnimInstance::AnimNotify_RollDiveMoveStop()
+{
+	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(TryGetPawnOwner()) : m_Player;
+	if (m_Player)
+		m_Player->SetRollDiveMove(false);
+}
+
+void UPlayerCharacterAnimInstance::AnimNotify_RollDiveFinish()
+{
+	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(TryGetPawnOwner()) : m_Player;
+	if (m_Player)
+		m_Player->RollDiveFinish();
 }

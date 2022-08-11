@@ -13,6 +13,7 @@ enum class EPlayerState : uint8
 {
 	Idle,
 	Sprint,
+	RollDive,
 	Reloading,
 	Equipping,
 

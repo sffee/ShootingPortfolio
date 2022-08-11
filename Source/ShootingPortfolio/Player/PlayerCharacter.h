@@ -113,8 +113,10 @@ private:
 	FHitResult m_TraceHitResult;
 
 private:
-	bool m_IsMoveForward;
-	bool m_IsMoveSide;
+	bool m_PressMoveForwardButton;
+	bool m_PressMoveBackButton;
+	bool m_PressMoveLeftButton;
+	bool m_PressMoveRightButton;
 
 	bool m_AimingButton;
 	bool m_IsAiming;
@@ -140,6 +142,8 @@ private:
 	FRotator m_StartAimRotation;
 
 	bool m_UseRotationRootBone;
+
+	bool m_RollDiveMove;
 
 public:
 	APlayerCharacter();
@@ -168,6 +172,8 @@ private:
 	void SprintButtonPressed();
 	void SprintButtonReleased();
 
+	void RollDiveButtonPressed();
+
 	void Key1ButtonPressed();
 	void Key2ButtonPressed();
 
@@ -187,9 +193,12 @@ private:
 
 	void DamageTimerEnd();
 
+	void RollDive();
+
 public:
 	void ReloadFinish();
 	void EquipFinish();
+	void RollDiveFinish();
 
 public:
 	void EquipWeapon(AWeapon* _Weapon);
@@ -204,6 +213,7 @@ private:
 	void UpdateTraceHitResult();
 	void UpdateCrosshairColor();
 	void UpdateStamina(float _DeltaTime);
+	void UpdateRollDiveMove(float _DeltaTime);
 
 private:
 	void StartStaminaRestore();
@@ -222,6 +232,7 @@ public:
 public:
 	FORCEINLINE void SetState(EPlayerState _State) { m_State = _State; }
 	FORCEINLINE void SetWeapon(AWeapon* _Weapon) { m_EquipWeapon = _Weapon; }
+	FORCEINLINE void SetRollDiveMove(bool _Set) { m_RollDiveMove = _Set; }
 
 public:
 	FORCEINLINE bool IsAiming() const { return m_IsAiming; }

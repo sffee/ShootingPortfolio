@@ -83,4 +83,10 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_EquipFinish();
+
+	UFUNCTION()
+	void AnimNotify_RollDiveMoveStop();
+
+	UFUNCTION()
+	void AnimNotify_RollDiveFinish();
 };
