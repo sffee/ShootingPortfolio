@@ -44,10 +44,10 @@ public:
 	void SetHP(float _CurHP, float _MaxHP);
 	void SetStamina(float _CurStamina, float _MaxStamina);
 	void SetWeaponName(FString _Name);
-	void SetAmmo(float _Ammo, float _Capacity);
+	void SetAmmo(int32 _Ammo, int32 _Capacity);
 
 public:
-	void SetCrosshairType(FName _TypeName);
+	void SetCrosshairType(const ECrosshairType _Type);
 	FORCEINLINE void SetCrosshairSpread(const float _Spread) { m_CrosshairSpread = _Spread; }
 	FORCEINLINE void SetCrosshairColor(const FLinearColor& _Color) { m_CrosshairColor = _Color; }
 

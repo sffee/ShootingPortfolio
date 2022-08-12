@@ -26,14 +26,15 @@ ASubmachineGun::ASubmachineGun()
 	if (FireCameraShake.Succeeded())
 		m_FireCameraShake = FireCameraShake.Class;
 
+	m_Name = "Submachine Gun";
+	m_AttachSocketName = "AttachSMGSocket";
 	m_Ammo = 30;
 	m_Magazine = 30;
-	m_CrosshairType = "Cross";
+	m_CrosshairType = ECrosshairType::Cross;
 	m_CrosshairRecoil = 0.75f;
 	m_CameraZoomFOV = 50.f;
 	m_ReloadSectionName = "Reload SMG";
 	m_Type = EWeaponType::SubmachineGun;
-	m_Name = "Submachine Gun";
 	m_Damage = 10;
 	m_HeadDamageRate = 1.5f;
 	m_Range = 1000.f;

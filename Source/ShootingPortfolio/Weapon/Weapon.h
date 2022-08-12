@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class UAnimationAsset;
+
 UCLASS()
 class SHOOTINGPORTFOLIO_API AWeapon : public AActor
 {
@@ -28,6 +30,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	EWeaponType m_Type;
 
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	FString m_AttachSocketName;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	float m_IdleFireBlendWeight;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	float m_AimingFireBlendWeight;
+
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	int32 m_InventorySlotIndex;
 
@@ -47,9 +58,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Ammo)
 	int32 m_Magazine;
 
+	UPROPERTY(EditAnywhere, Category = Fire)
+	bool m_InfinityMagazine;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = Crosshair)
-	FName m_CrosshairType;
+	ECrosshairType m_CrosshairType;
 
 	UPROPERTY(EditAnywhere, Category = Crosshair)
 	float m_CrosshairRecoil;
@@ -73,6 +87,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Fire)
 	TSubclassOf<UCameraShakeBase> m_FireCameraShake;
+
+	UPROPERTY(EditAnywhere, Category = Fire)
+	UAnimationAsset* m_FireAnimation;
 	
 	UPROPERTY(EditAnywhere, Category = Fire)
 	bool m_IsAutoFire;
@@ -92,6 +109,7 @@ public:
 
 public:
 	virtual void Fire(float _Spread, const FHitResult& _TargetHitResult);
+	void SetAmmo(int32 _Ammo);
 	void AddAmmo(int32 _Ammo);
 	void SpawnDamageText(const FHitResult& _HitResult, float _Damage, bool _IsHeadShot);
 
@@ -99,13 +117,14 @@ protected:
 	void PlaySound(USoundCue* _Sound);
 	void PlayMuzzleFlashParticle();
 	void PlayCameraShake();
+	void PlayFireAnimation();
 
 protected:
 	void PlayHitParticle(const FVector& _Location);
 
 public:
 	FORCEINLINE USkeletalMeshComponent* GetMesh() const { return m_Mesh; }
-	FORCEINLINE FName GetCrosshairType() const { return m_CrosshairType; }
+	FORCEINLINE ECrosshairType GetCrosshairType() const { return m_CrosshairType; }
 	FORCEINLINE float GetCrosshairRecoil() const { return m_CrosshairRecoil; }
 	FORCEINLINE float GetCameraZoomFOV() const { return m_CameraZoomFOV; }
 	FORCEINLINE float GetCameraZoomSpeed() const { return m_CameraZoomSpeed; }
@@ -119,6 +138,10 @@ public:
 	FORCEINLINE float GetRange() const { return m_Range; }
 	FORCEINLINE UTexture2D* GetWeaponIcon() const { return m_WeaponIcon; }
 	FORCEINLINE int32 GetInventorySlotIndex() const { return m_InventorySlotIndex; }
+	FORCEINLINE FString GetAttachSocketName() const { return m_AttachSocketName; }
+	FORCEINLINE float GetIdleFireBlendWeight() const { return m_IdleFireBlendWeight; }
+	FORCEINLINE float GetAimingFireBlendWeight() const { return m_AimingFireBlendWeight; }
+	FORCEINLINE bool GetInfinityMagazine() const { return m_InfinityMagazine; }
 
 public:
 	FORCEINLINE bool AmmoEmpty() const { return m_Ammo == 0; }

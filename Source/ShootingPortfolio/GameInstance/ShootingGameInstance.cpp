@@ -19,12 +19,22 @@ UShootingGameInstance::UShootingGameInstance()
 		m_MonsterAttackInfoDataTables.Add(TEXT("Khaimera"), KhaimeraAttackInfoDataTable.Object);
 }
 
-FCrosshairTexture* UShootingGameInstance::GetCrosshairTexture(const FName& _TypeName) const
+FCrosshairTexture* UShootingGameInstance::GetCrosshairTexture(const ECrosshairType _Type) const
 {
 	if (m_CrosshairDataTable == nullptr)
 		return nullptr;
 
-	return m_CrosshairDataTable->FindRow<FCrosshairTexture>(_TypeName, TEXT(""));
+	FName RowName;
+	switch (_Type)
+	{
+	case ECrosshairType::Cross:
+		RowName = TEXT("Cross");
+		break;
+	default:
+		break;
+	}
+
+	return m_CrosshairDataTable->FindRow<FCrosshairTexture>(RowName, TEXT(""));
 }
 
 UDataTable* UShootingGameInstance::GetMonsterAttackInfoDataTable(const FName& _MonsterName) const

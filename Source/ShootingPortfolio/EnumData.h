@@ -33,6 +33,7 @@ enum class ETurnState : uint8
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
+	Pistol,
 	SubmachineGun,
 
 	MAX

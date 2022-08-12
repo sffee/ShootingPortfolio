@@ -51,6 +51,26 @@ APlayerCharacter::APlayerCharacter()
 	if (PlayerMesh.Succeeded())
 		GetMesh()->SetSkeletalMesh(PlayerMesh.Object);
 
+	static ConstructorHelpers::FClassFinder<AWeapon> DefaultWeapon(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/BP_SubmachineGun.BP_SubmachineGun_C'"));
+	if (DefaultWeapon.Succeeded())
+		m_DefaultWeapon = DefaultWeapon.Class;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/FireMontage.FireMontage'"));
+	if (FireAnimMontage.Succeeded())
+		m_FireAnimMontage = FireAnimMontage.Object;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ReloadAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/ReloadMontage.ReloadMontage'"));
+	if (ReloadAnimMontage.Succeeded())
+		m_ReloadAnimMontage = ReloadAnimMontage.Object;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DamageAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/DamageMontage.DamageMontage'"));
+	if (DamageAnimMontage.Succeeded())
+		m_DamageAnimMontage = DamageAnimMontage.Object;
+
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> EquipWeaponMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/EquipWeaponMontage.EquipWeaponMontage'"));
+	if (EquipWeaponMontage.Succeeded())
+		m_EquipWeaponAnimMontage = EquipWeaponMontage.Object;
+
 	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -88.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
 
@@ -73,25 +93,6 @@ APlayerCharacter::APlayerCharacter()
 	m_FollowCamera->SetupAttachment(m_CameraArm);
 	m_FollowCamera->bUsePawnControlRotation = false;
 
-	static ConstructorHelpers::FClassFinder<AWeapon> DefaultWeapon(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/SubmachineGun.SubmachineGun_C'"));
-	if (DefaultWeapon.Succeeded())
-		m_DefaultWeapon = DefaultWeapon.Class;
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/FireMontage.FireMontage'"));
-	if (FireAnimMontage.Succeeded())
-		m_FireAnimMontage = FireAnimMontage.Object;
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> ReloadAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/ReloadMontage.ReloadMontage'"));
-	if (ReloadAnimMontage.Succeeded())
-		m_ReloadAnimMontage = ReloadAnimMontage.Object;
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> DamageAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/DamageMontage.DamageMontage'"));
-	if (DamageAnimMontage.Succeeded())
-		m_DamageAnimMontage = DamageAnimMontage.Object;
-
-	static ConstructorHelpers::FObjectFinder<UAnimMontage> EquipWeaponMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/EquipWeaponMontage.EquipWeaponMontage'"));
-	if (EquipWeaponMontage.Succeeded())
-		m_EquipWeaponAnimMontage = EquipWeaponMontage.Object;
 
 	GetMesh()->bReceivesDecals = false;
 }
@@ -307,7 +308,7 @@ void APlayerCharacter::EquipWeapon(AWeapon* _Weapon)
 	if (_Weapon == nullptr)
 		return;
 
-	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName(_Weapon->GetAttachSocketName()));
 	if (HandSocket)
 		HandSocket->AttachActor(_Weapon, GetMesh());
 
@@ -360,10 +361,13 @@ void APlayerCharacter::Fire()
 			StopSprint();
 	}
 
-	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
 	if (m_EquipWeapon->AmmoEmpty())
 	{
-		if (m_Controller && m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) == false)
+		m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+
+		if (m_EquipWeapon->GetInfinityMagazine())
+			Reloading();
+		else if (m_Controller && m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) == false)
 			Reloading();
 
 		return;
@@ -375,11 +379,10 @@ void APlayerCharacter::Fire()
 	if (m_FireAnimMontage)
 		PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
 
-	if (m_EquipWeapon->IsAutoFire())
-		GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
-
 	if (m_Controller)
 		m_Controller->SubAmmo();
+
+	GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
 }
 
 void APlayerCharacter::FireTimerEnd()
@@ -387,7 +390,19 @@ void APlayerCharacter::FireTimerEnd()
 	if (m_EquipWeapon == nullptr)
 		return;
 
-	if (m_FireButtonPress)
+	if (m_EquipWeapon->AmmoEmpty())
+	{
+		m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+
+		if (m_EquipWeapon->GetInfinityMagazine())
+			Reloading();
+		else if (m_Controller && m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) == false)
+			Reloading();
+
+		return;
+	}
+
+	if (m_FireButtonPress && m_EquipWeapon->IsAutoFire())
 		Fire();
 }
 
@@ -407,9 +422,19 @@ void APlayerCharacter::Reloading()
 			return;
 	}
 
-	if (m_Controller == nullptr || m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()) || m_EquipWeapon->AmmoFull())
+	if (m_IsAiming)
+		StopAiming();
+
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller == nullptr)
+		return;
+	
+	if (m_EquipWeapon->AmmoFull())
 		return;
 
+	if (m_EquipWeapon->GetInfinityMagazine() == false && m_Controller->AmmoMapEmpty(m_EquipWeapon->GetWeaponType()))
+		return;
+	
 	m_State = EPlayerState::Reloading;
 	m_IsAiming = false;
 

@@ -109,7 +109,7 @@ void AShootingHUD::SetWeaponName(FString _Name)
 	m_PlayerOverlayWidget->SetWeaponName(_Name);
 }
 
-void AShootingHUD::SetAmmo(float _Ammo, float _Capacity)
+void AShootingHUD::SetAmmo(int32 _Ammo, int32 _Capacity)
 {
 	if (m_PlayerOverlayWidget == nullptr)
 		return;
@@ -117,15 +117,11 @@ void AShootingHUD::SetAmmo(float _Ammo, float _Capacity)
 	m_PlayerOverlayWidget->SetAmmo(_Ammo, _Capacity);
 }
 
-void AShootingHUD::SetCrosshairType(FName _TypeName)
+void AShootingHUD::SetCrosshairType(const ECrosshairType _Type)
 {
 	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GameInstance == nullptr)
 		return;
 
-	FCrosshairTexture* CrosshairTexture = GameInstance->GetCrosshairTexture(_TypeName);
-	if (CrosshairTexture == nullptr)
-		return;
-
-	m_CrosshairTexture = *CrosshairTexture;
+	m_CrosshairTexture = *GameInstance->GetCrosshairTexture(_Type);
 }

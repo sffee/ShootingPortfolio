@@ -1,10 +1,12 @@
-#include "PlayerOverlayWidget.h"
+﻿#include "PlayerOverlayWidget.h"
 
 #include "HPStaminaWidget.h"
 #include "AmmoWidget.h"
 #include "WaveMonsterCountWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+
+#include <string>
 
 void UPlayerOverlayWidget::NativeConstruct()
 {
@@ -48,11 +50,20 @@ void UPlayerOverlayWidget::SetWeaponName(FString _Name)
 	AmmoWidget->ItemName->SetText(FText::FromString(_Name));
 }
 
-void UPlayerOverlayWidget::SetAmmo(float _Ammo, float _Capacity)
+void UPlayerOverlayWidget::SetAmmo(int32 _Ammo, int32 _Capacity)
 {
 	if (AmmoWidget == nullptr)
 		return;
 
 	AmmoWidget->Ammo->SetText(FText::AsNumber(_Ammo));
-	AmmoWidget->Capacity->SetText(FText::AsNumber(_Capacity));
+
+	if (0 <= _Capacity)
+	{
+		AmmoWidget->Capacity->SetText(FText::AsNumber(_Capacity));
+	}
+	else
+	{
+		const TCHAR* Txt = TEXT("∞");
+		AmmoWidget->Capacity->SetText(FText::FromString(Txt));
+	}
 }

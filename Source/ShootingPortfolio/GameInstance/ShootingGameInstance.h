@@ -25,7 +25,7 @@ public:
 	UShootingGameInstance();
 
 public:
-	FCrosshairTexture* GetCrosshairTexture(const FName& _TypeName) const;
+	FCrosshairTexture* GetCrosshairTexture(const ECrosshairType _Type) const;
 	UDataTable* GetMonsterAttackInfoDataTable(const FName& _MonsterName) const;
 	UDataTable* GetMonsterBuffInfoDataTable(const FName& _MonsterName) const;
 };

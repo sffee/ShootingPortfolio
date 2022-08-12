@@ -50,5 +50,5 @@ public:
 	void SetHP(float _CurHP, float _MaxHP);
 	void SetStamina(float _CurStamina, float _MaxStamina);
 	void SetWeaponName(FString _Name);
-	void SetAmmo(float _Ammo, float _Capacity);
+	void SetAmmo(int32 _Ammo, int32 _Capacity);
 };

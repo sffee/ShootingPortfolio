@@ -6,12 +6,15 @@
 AWeapon::AWeapon()
 	: m_Ammo(0)
 	, m_Magazine(0)
+	, m_InfinityMagazine(false)
 	, m_CrosshairRecoil(0.f)
 	, m_CameraZoomFOV(0.f)
 	, m_CameraZoomSpeed(20.f)
 	, m_IsAutoFire(true)
 	, m_AutoFireDelay(0.1f)
 	, m_Type(EWeaponType::MAX)
+	, m_IdleFireBlendWeight(0.75f)
+	, m_AimingFireBlendWeight(0.75f)
 	, m_InventorySlotIndex(0)
 	, m_Damage(0)
 	, m_HeadDamageRate(1.5f)
@@ -43,6 +46,12 @@ void AWeapon::Fire(float _Spread, const FHitResult& _TargetHitResult)
 	PlaySound(m_FireSound);
 	PlayMuzzleFlashParticle();
 	PlayCameraShake();
+	PlayFireAnimation();
+}
+
+void AWeapon::SetAmmo(int32 _Ammo)
+{
+	m_Ammo = _Ammo;
 }
 
 void AWeapon::AddAmmo(int32 _Ammo)
@@ -101,6 +110,14 @@ void AWeapon::PlayCameraShake()
 		return;
 
 	Controller->ClientStartCameraShake(m_FireCameraShake);
+}
+
+void AWeapon::PlayFireAnimation()
+{
+	if (m_FireAnimation == nullptr)
+		return;
+
+	m_Mesh->PlayAnimation(m_FireAnimation, false);
 }
 
 void AWeapon::PlayHitParticle(const FVector& _Location)

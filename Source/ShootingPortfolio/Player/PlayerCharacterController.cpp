@@ -227,7 +227,6 @@ void APlayerCharacterController::AddStamina(float _Value)
 
 void APlayerCharacterController::SubAmmo()
 {
-	return;
 	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
 	if (m_Player == nullptr)
 		return;
@@ -250,15 +249,22 @@ void APlayerCharacterController::ReloadFinish()
 	if (Weapon == nullptr)
 		return;
 
-	int32 WeaponAmmo = Weapon->GetAmmo();
-	int32 WeaponMagazine = Weapon->GetMagazine();
-	int32& AmmoMap = m_AmmoMap[Weapon->GetWeaponType()];
+	if (Weapon->GetInfinityMagazine())
+	{
+		Weapon->SetAmmo(Weapon->GetMagazine());
+	}
+	else
+	{
+		int32 WeaponAmmo = Weapon->GetAmmo();
+		int32 WeaponMagazine = Weapon->GetMagazine();
+		int32& AmmoMap = m_AmmoMap[Weapon->GetWeaponType()];
 
-	int32 Ammo = FMath::Clamp(WeaponMagazine - WeaponAmmo, 0, WeaponMagazine);
-	int32 ReloadAmmo = AmmoMap < Ammo ? AmmoMap : Ammo;
+		int32 Ammo = FMath::Clamp(WeaponMagazine - WeaponAmmo, 0, WeaponMagazine);
+		int32 ReloadAmmo = AmmoMap < Ammo ? AmmoMap : Ammo;
 
-	Weapon->AddAmmo(ReloadAmmo);
-	AmmoMap -= ReloadAmmo;
+		Weapon->AddAmmo(ReloadAmmo);
+		AmmoMap -= ReloadAmmo;
+	}
 
 	UpdateAmmoHUD();
 }
@@ -335,15 +341,22 @@ void APlayerCharacterController::UpdateAmmoHUD()
 	if (Weapon == nullptr)
 		return;
 
-	EWeaponType WeaponType = Weapon->GetWeaponType();
-	if (m_AmmoMap.Contains(WeaponType) == false)
-		return;
+	if (Weapon->GetInfinityMagazine())
+	{
+		m_HUD->SetAmmo(Weapon->GetAmmo(), -1);
+	}
+	else
+	{
+		EWeaponType WeaponType = Weapon->GetWeaponType();
+		if (m_AmmoMap.Contains(WeaponType) == false)
+			return;
 
-	m_HUD->SetAmmo(Weapon->GetAmmo(), m_AmmoMap[WeaponType]);
+		m_HUD->SetAmmo(Weapon->GetAmmo(), m_AmmoMap[WeaponType]);
 
-	int32 Ammo = m_AmmoMap[WeaponType] + Weapon->GetAmmo();
-	UWeaponSlotWidget* SlotWidget = GetWeaponSlotWidget(Weapon);
-	SlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+		int32 Ammo = m_AmmoMap[WeaponType] + Weapon->GetAmmo();
+		UWeaponSlotWidget* SlotWidget = GetWeaponSlotWidget(Weapon);
+		SlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+	}
 }
 
 void APlayerCharacterController::AddWeapon(AWeapon* _Weapon)

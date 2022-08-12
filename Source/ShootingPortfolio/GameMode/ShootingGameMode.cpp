@@ -8,8 +8,8 @@
 
 AShootingGameMode::AShootingGameMode()
 	: m_Wave(1)
-	, m_Phase2Wave(1)
-	, m_BossWave(1)
+	, m_Phase2Wave(3)
+	, m_BossWave(6)
 	, m_SpawnPointCount(1)
 	, m_SpawnCompleteMonsterCount(0)
 	, m_NeedSpawnMonsterCount(0)
@@ -37,7 +37,7 @@ AShootingGameMode::AShootingGameMode()
 void AShootingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
+	return;
 	InitSpawnPointMap();
 
 	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
@@ -214,5 +214,8 @@ void AShootingGameMode::Delegate_MonsterDie(UObject* _Monster)
 	{
 		m_Wave++;
 		StartWaveComplete();
+
+		if (m_Wave == m_Phase2Wave)
+			m_SpawnPointCount++;
 	}
 }

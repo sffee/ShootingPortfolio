@@ -42,6 +42,12 @@ void UPlayerCharacterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	m_TurnState = m_Player->GetTurnState();
 	m_UseRotationRootBone = m_Player->GetUseRotationRootBone();
 
+	if (m_EquipWeapon)
+	{
+		m_WeaponType = m_EquipWeapon->GetWeaponType();
+		m_WeaponFireBlendWeight = m_IsAiming ? m_EquipWeapon->GetAimingFireBlendWeight() : m_EquipWeapon->GetIdleFireBlendWeight();
+	}
+
 	CalcYaw(DeltaTime);
 	CalcLean(DeltaTime);
 	CalcHandTransform(DeltaTime);
