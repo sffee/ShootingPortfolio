@@ -29,6 +29,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	FLinearColor m_CrosshairColor;
+
+	bool m_DrawCrosshair;
 	
 public:
 	AShootingHUD();
@@ -50,6 +52,7 @@ public:
 	void SetCrosshairType(const ECrosshairType _Type);
 	FORCEINLINE void SetCrosshairSpread(const float _Spread) { m_CrosshairSpread = _Spread; }
 	FORCEINLINE void SetCrosshairColor(const FLinearColor& _Color) { m_CrosshairColor = _Color; }
+	FORCEINLINE void SetDrawCrosshair(bool _Set) { m_DrawCrosshair = _Set; }
 
 public:
 	FORCEINLINE UPlayerOverlayWidget* GetPlayerOverlayWidget() const { return m_PlayerOverlayWidget; }

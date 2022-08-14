@@ -1,0 +1,2 @@
+#include "SniperRifleScopeWidget.h"
+

@@ -5,6 +5,7 @@
 #include "NiagaraComponent.h"
 
 AProjectile::AProjectile()
+	: m_LifeSpan(0.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -22,6 +23,8 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SetLifeSpan(m_LifeSpan);
+
 	SpawnTrailSystem();
 
 	m_CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);

@@ -37,6 +37,7 @@ enum class EWeaponType : uint8
 	Pistol,
 	SubmachineGun,
 	RocketLauncher,
+	SniperRifle,
 
 	MAX
 };

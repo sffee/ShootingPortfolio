@@ -12,9 +12,6 @@ AHitScanWeapon::AHitScanWeapon()
 
 void AHitScanWeapon::Fire(const FHitResult& _TraceHitResult)
 {
-	if (m_CanFire == false)
-		return;
-
 	CalcHitResult();
 
 	PlaySmokeBeamParticle();

@@ -12,6 +12,7 @@ class AShootingHUD;
 class AWeapon;
 class UWeaponSlotWidget;
 class AMonster;
+class USniperRifleScopeWidget;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API APlayerCharacterController : public APlayerController
@@ -23,6 +24,18 @@ class SHOOTINGPORTFOLIO_API APlayerCharacterController : public APlayerControlle
 private:
 	APlayerCharacter* m_Player;
 	AShootingHUD* m_HUD;
+
+private:
+	TSubclassOf<UUserWidget> m_SniperRifleScopeWidgetClass;
+
+	UPROPERTY()
+	USniperRifleScopeWidget* m_SniperRifleScopeWidget;
+
+	UPROPERTY(EditAnywhere, Category = SniperRifle)
+	USoundCue* m_SniperRifleZoomInSound;
+
+	UPROPERTY(EditAnywhere, Category = SniperRifle)
+	USoundCue* m_SniperRifleZoomOutSound;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Player | Weapon")
@@ -80,6 +93,10 @@ private:
 private:
 	void InitAmmo();
 	void UpdateFirstHUD();
+
+public:
+	void SniperZoomIn();
+	void SniperZoomOut();
 
 public:
 	void AddHP(float _Value);

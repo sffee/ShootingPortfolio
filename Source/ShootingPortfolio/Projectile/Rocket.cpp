@@ -25,6 +25,7 @@ ARocket::ARocket()
 	m_ProjectileMovementComponent->ProjectileGravityScale = 0.f;
 
 	m_DamageRadius = 500.f;
+	m_LifeSpan = 5.f;
 }
 
 void ARocket::BeginPlay()
@@ -70,7 +71,12 @@ void ARocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitive
 {
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 
-	Explosion();
-
 	Destroy();
+}
+
+void ARocket::Destroyed()
+{
+	Super::Destroyed();
+
+	Explosion();
 }

@@ -4,9 +4,6 @@
 
 void AProjectileWeapon::Fire(const FHitResult& _TraceHitResult)
 {
-	if (m_CanFire == false)
-		return;
-
 	if (m_Projectile == nullptr)
 		return;
 

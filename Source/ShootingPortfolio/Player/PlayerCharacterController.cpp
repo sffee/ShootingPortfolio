@@ -8,6 +8,7 @@
 #include "ShootingPortfolio/UI/WeaponInventoryWidget.h"
 #include "ShootingPortfolio/UI/WaveMonsterCountWidget.h"
 #include "ShootingPortfolio/UI/MonsterCountBlockWidget.h"
+#include "ShootingPortfolio/UI/SniperRifleScopeWidget.h"
 #include "ShootingPortfolio/Weapon/Weapon.h"
 #include "ShootingPortfolio/Monster/Monster.h"
 #include "Components/TextBlock.h"
@@ -24,6 +25,18 @@ APlayerCharacterController::APlayerCharacterController()
 	, m_WaveState(EWaveState::MAX)
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> SniperRifleScopeWidget(TEXT("WidgetBlueprint'/Game/Game/Blueprints/UI/WBP_SpierRifleScope.WBP_SpierRifleScope_C'"));
+	if (SniperRifleScopeWidget.Succeeded())
+		m_SniperRifleScopeWidgetClass = SniperRifleScopeWidget.Class;
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> SniperRifleZoomInSound(TEXT("SoundCue'/Game/MilitaryWeapSilver/Sound/SniperRifle/Cues/SniperRifle_ZoomIn_Cue.SniperRifle_ZoomIn_Cue'"));
+	if (SniperRifleZoomInSound.Succeeded())
+		m_SniperRifleZoomInSound = SniperRifleZoomInSound.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> SniperRifleZoomOutSound(TEXT("SoundCue'/Game/MilitaryWeapSilver/Sound/SniperRifle/Cues/SniperRifle_ZoomOut_Cue.SniperRifle_ZoomOut_Cue'"));
+	if (SniperRifleZoomOutSound.Succeeded())
+		m_SniperRifleZoomOutSound = SniperRifleZoomOutSound.Object;
 }
 
 void APlayerCharacterController::BeginPlay()
@@ -37,6 +50,13 @@ void APlayerCharacterController::BeginPlay()
 	m_Status.CurStamina = m_Status.MaxStamina;
 
 	InitAmmo();
+
+	if (m_SniperRifleScopeWidgetClass)
+	{
+		m_SniperRifleScopeWidget = CreateWidget<USniperRifleScopeWidget>(this, m_SniperRifleScopeWidgetClass);
+		m_SniperRifleScopeWidget->AddToViewport();
+		m_SniperRifleScopeWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void APlayerCharacterController::Tick(float DeltaTime)
@@ -197,6 +217,8 @@ void APlayerCharacterController::UpdateWaveCountdown(float _DeltaTime)
 void APlayerCharacterController::InitAmmo()
 {
 	m_AmmoMap.Add(EWeaponType::SubmachineGun, m_StartAmmo.SubmachineGun);
+	m_AmmoMap.Add(EWeaponType::RocketLauncher, m_StartAmmo.RocketLauncher);
+	m_AmmoMap.Add(EWeaponType::SniperRifle, m_StartAmmo.SniperRifle);
 }
 
 void APlayerCharacterController::UpdateFirstHUD()
@@ -209,6 +231,37 @@ void APlayerCharacterController::UpdateFirstHUD()
 	UpdateAmmoHUD();
 
 	m_FirstHUDUpdateComplete = true;
+}
+
+void APlayerCharacterController::SniperZoomIn()
+{
+	if (m_SniperRifleScopeWidget == nullptr)
+		return;
+
+	m_SniperRifleScopeWidget->SetVisibility(ESlateVisibility::Visible);
+	m_SniperRifleScopeWidget->PlayAnimation(m_SniperRifleScopeWidget->ZoomAnimation);
+
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD)
+		m_HUD->SetDrawCrosshair(false);
+
+	if (m_SniperRifleZoomInSound)
+		UGameplayStatics::PlaySound2D(this, m_SniperRifleZoomInSound);
+}
+
+void APlayerCharacterController::SniperZoomOut()
+{
+	if (m_SniperRifleScopeWidget == nullptr)
+		return;
+
+	m_SniperRifleScopeWidget->PlayAnimation(m_SniperRifleScopeWidget->ZoomAnimation, 0.f, 1, EUMGSequencePlayMode::Reverse);
+
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD)
+		m_HUD->SetDrawCrosshair(true);
+
+	if (m_SniperRifleZoomOutSound)
+		UGameplayStatics::PlaySound2D(this, m_SniperRifleZoomOutSound);
 }
 
 void APlayerCharacterController::AddHP(float _Value)

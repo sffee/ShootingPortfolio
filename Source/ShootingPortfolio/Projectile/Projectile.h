@@ -37,6 +37,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Info)
 	UNiagaraSystem* m_TrailSystem;
+
+	UPROPERTY(EditAnywhere, Category = Info)
+	float m_LifeSpan;
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = Hit)

@@ -34,8 +34,8 @@ ARocketLauncher::ARocketLauncher()
 
 	m_Name = "RocketLauncher";
 	m_AttachSocketName = "AttachRocketLauncherSocket";
-	m_Ammo = 999;
-	m_Magazine = 999;
+	m_Ammo = 3;
+	m_Magazine = 3;
 	m_CrosshairType = ECrosshairType::Circle;
 	m_CrosshairRecoil = 0.75f;
 	m_CameraZoomFOV = 50.f;
@@ -45,5 +45,6 @@ ARocketLauncher::ARocketLauncher()
 	m_HeadDamageRate = 1.5f;
 	m_Range = 2000.f;
 	m_AimingFireBlendWeight = 0.9f;
+	m_FireDelay = 1.f;
 	m_IsAutoFire = false;
 }

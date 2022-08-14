@@ -34,6 +34,7 @@ APlayerCharacter::APlayerCharacter()
 	, m_FireButtonPress(false)
 	, m_SprintButtonPress(false)
 	, m_IsSprint(false)
+	, m_CanFire(true)
 	, m_CrosshairAimingValue(0.f)
 	, m_CrosshairRecoilValue(0.f)
 	, m_CrosshairRecoilMaxValue(3.75f)
@@ -334,6 +335,17 @@ void APlayerCharacter::Aiming()
 	m_IsAiming = true;
 
 	GetCharacterMovement()->MaxWalkSpeed = m_AimingMoveSpeed;
+
+	if (m_EquipWeapon && m_EquipWeapon->GetWeaponType() == EWeaponType::SniperRifle)
+	{
+		m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+		if (m_Controller)
+			m_Controller->SniperZoomIn();
+
+		GetMesh()->SetVisibility(false);
+		if (m_EquipWeapon)
+			m_EquipWeapon->GetMesh()->SetVisibility(false);
+	}
 }
 
 void APlayerCharacter::StopAiming()
@@ -344,14 +356,25 @@ void APlayerCharacter::StopAiming()
 	m_IsAiming = false;
 
 	GetCharacterMovement()->MaxWalkSpeed = m_DefaultMoveSpeed;
+
+	if (m_EquipWeapon && m_EquipWeapon->GetWeaponType() == EWeaponType::SniperRifle)
+	{
+		m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+		if (m_Controller)
+			m_Controller->SniperZoomOut();
+
+		GetMesh()->SetVisibility(true);
+		if (m_EquipWeapon)
+			m_EquipWeapon->GetMesh()->SetVisibility(true);
+	}
 }
 
 void APlayerCharacter::Fire()
 {
-	if (m_EquipWeapon == nullptr)
+	if (m_EquipWeapon == nullptr || m_CanFire == false)
 		return;
 	
-	if (m_State == EPlayerState::Equipping || m_State == EPlayerState::RollDive)
+	if (m_State == EPlayerState::Equipping || m_State == EPlayerState::Reloading || m_State == EPlayerState::RollDive)
 		return;
 
 	if (m_State != EPlayerState::Idle)
@@ -372,8 +395,10 @@ void APlayerCharacter::Fire()
 		return;
 	}
 
-	m_CrosshairRecoilValue = FMath::Min(m_CrosshairRecoilValue + m_EquipWeapon->GetCrosshairRecoil(), m_CrosshairRecoilMaxValue);
 	m_EquipWeapon->Fire(m_TraceHitResult);
+	m_CanFire = false;
+
+	m_CrosshairRecoilValue = FMath::Min(m_CrosshairRecoilValue + m_EquipWeapon->GetCrosshairRecoil(), m_CrosshairRecoilMaxValue);
 
 	if (m_FireAnimMontage)
 		PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
@@ -386,6 +411,8 @@ void APlayerCharacter::Fire()
 
 void APlayerCharacter::FireTimerEnd()
 {
+	m_CanFire = true;
+
 	if (m_EquipWeapon == nullptr)
 		return;
 
@@ -435,7 +462,7 @@ void APlayerCharacter::Reloading()
 		return;
 	
 	m_State = EPlayerState::Reloading;
-	m_IsAiming = false;
+	StopAiming();
 
 	if (m_ReloadAnimMontage)
 		PlayMontage(m_ReloadAnimMontage, m_EquipWeapon->GetReloadSectionName());
@@ -508,7 +535,7 @@ void APlayerCharacter::ReloadFinish()
 	m_State = EPlayerState::Idle;
 
 	if (m_AimingButton)
-		m_IsAiming = true;
+		Aiming();
 
 	if (m_Controller)
 		m_Controller->ReloadFinish();

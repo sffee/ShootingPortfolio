@@ -126,6 +126,8 @@ private:
 	bool m_SprintButtonPress;
 	bool m_IsSprint;
 
+	bool m_CanFire;
+
 private:
 	float m_CrosshairAimingValue;
 	float m_CrosshairRecoilValue;

@@ -86,8 +86,16 @@ struct FStartAmmo
 	UPROPERTY(EditAnywhere)
 	int32 SubmachineGun;
 
+	UPROPERTY(EditAnywhere)
+	int32 RocketLauncher;
+
+	UPROPERTY(EditAnywhere)
+	int32 SniperRifle;
+
 	FStartAmmo()
 		: SubmachineGun(60)
+		, RocketLauncher(18)
+		, SniperRifle(50)
 	{
 	}
 };

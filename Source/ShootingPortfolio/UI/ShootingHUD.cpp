@@ -6,6 +6,7 @@
 AShootingHUD::AShootingHUD()
 	: m_CrosshairSpread(0.f)
 	, m_CrosshairColor(FLinearColor::White)
+	, m_DrawCrosshair(true)
 {
 	ConstructorHelpers::FClassFinder<UUserWidget> PlayerOverlayWidgetClass(TEXT("WidgetBlueprint'/Game/Game/Blueprints/UI/WBP_HUDOverlay.WBP_HUDOverlay_C'"));
 	if (PlayerOverlayWidgetClass.Succeeded())
@@ -27,7 +28,7 @@ void AShootingHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	if (!GEngine)
+	if (!GEngine || m_DrawCrosshair == false)
 		return;
 
 	FVector2D ViewportSize;
