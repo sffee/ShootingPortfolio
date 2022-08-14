@@ -32,6 +32,6 @@ protected:
 	void UpdateHPBarWidget();
 
 protected:
-	virtual void ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser) override;
+	virtual float TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser) override;
 	virtual void Destroyed() override;
 };

@@ -119,11 +119,11 @@ void AKhaimera::UpdateShieldBarWidget()
 	m_BossMonsterHPBarWidget->ShieldBar->SetPercent(ShieldPercent);
 }
 
-void AKhaimera::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
+float AKhaimera::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser)
 {
 	bool IsUpdateShieldBar = 0.f < m_Status.CurShield ? true : false;
-	
-	Super::ReceiveDamage(_DamagedActor, _Damage, _DamageType, _InstigatorController, _DamageCauser);
+
+	float ActualDamage = Super::TakeDamage(_DamageAmount, _DamageEvent, _EventInstigator, _DamageCauser);
 
 	UpdateHPBarWidget();
 	if (IsUpdateShieldBar)
@@ -145,4 +145,6 @@ void AKhaimera::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamag
 			}
 		}
 	}
+
+	return ActualDamage;
 }

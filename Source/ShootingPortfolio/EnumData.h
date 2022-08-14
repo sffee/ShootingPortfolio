@@ -4,6 +4,7 @@ UENUM(BlueprintType)
 enum class ECrosshairType : uint8
 {
 	Cross,
+	Circle,
 
 	MAX
 };
@@ -35,6 +36,7 @@ enum class EWeaponType : uint8
 {
 	Pistol,
 	SubmachineGun,
+	RocketLauncher,
 
 	MAX
 };

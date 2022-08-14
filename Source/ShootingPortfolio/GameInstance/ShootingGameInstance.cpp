@@ -30,6 +30,9 @@ FCrosshairTexture* UShootingGameInstance::GetCrosshairTexture(const ECrosshairTy
 	case ECrosshairType::Cross:
 		RowName = TEXT("Cross");
 		break;
+	case ECrosshairType::Circle:
+		RowName = TEXT("Circle");
+		break;
 	default:
 		break;
 	}

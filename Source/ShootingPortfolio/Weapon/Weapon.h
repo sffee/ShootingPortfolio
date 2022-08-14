@@ -95,7 +95,12 @@ protected:
 	bool m_IsAutoFire;
 
 	UPROPERTY(EditAnywhere, Category = Fire, meta = (EditCondition = "m_IsAutoFire"))
-	float m_AutoFireDelay;
+	float m_FireDelay;
+
+	UPROPERTY(VisibleAnywhere, Category = Fire)
+	bool m_CanFire;
+
+	FTimerHandle m_CanFireTimer;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Reload)
@@ -108,7 +113,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	virtual void Fire(float _Spread, const FHitResult& _TargetHitResult);
+	virtual void Fire(const FHitResult& _TraceHitResult);
 	void SetAmmo(int32 _Ammo);
 	void AddAmmo(int32 _Ammo);
 	void SpawnDamageText(const FHitResult& _HitResult, float _Damage, bool _IsHeadShot);
@@ -122,6 +127,9 @@ protected:
 protected:
 	void PlayHitParticle(const FVector& _Location);
 
+private:
+	void CanFireTimerEnd();
+
 public:
 	FORCEINLINE USkeletalMeshComponent* GetMesh() const { return m_Mesh; }
 	FORCEINLINE ECrosshairType GetCrosshairType() const { return m_CrosshairType; }
@@ -129,7 +137,7 @@ public:
 	FORCEINLINE float GetCameraZoomFOV() const { return m_CameraZoomFOV; }
 	FORCEINLINE float GetCameraZoomSpeed() const { return m_CameraZoomSpeed; }
 	FORCEINLINE bool IsAutoFire() const { return m_IsAutoFire; }
-	FORCEINLINE float GetAutoFireDelay() const { return m_AutoFireDelay; }
+	FORCEINLINE float GetFireDelay() const { return m_FireDelay; }
 	FORCEINLINE FName GetReloadSectionName() const { return m_ReloadSectionName; }
 	FORCEINLINE EWeaponType GetWeaponType() const { return m_Type; }
 	FORCEINLINE FString GetWeaponName() const { return m_Name; }

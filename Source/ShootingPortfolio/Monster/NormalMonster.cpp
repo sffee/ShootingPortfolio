@@ -36,20 +36,22 @@ void ANormalMonster::UpdateHPBarWidget()
 	m_HPBarWidget->HPBar->SetPercent(HPPercent);
 }
 
-void ANormalMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
+float ANormalMonster::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser)
 {
-	Super::ReceiveDamage(_DamagedActor, _Damage, _DamageType, _InstigatorController, _DamageCauser);
+	float ActualDamage = Super::TakeDamage(_DamageAmount, _DamageEvent, _EventInstigator, _DamageCauser);
 
 	if (m_Status.CurHP <= 0.f)
 	{
 		Destroy();
-		return;
+		return ActualDamage;
 	}
-	
+
 	if (m_HPBarWidgetComponent)
 		m_HPBarWidgetComponent->SetVisibility(true);
 
 	UpdateHPBarWidget();
+
+	return ActualDamage;
 }
 
 void ANormalMonster::Destroyed()

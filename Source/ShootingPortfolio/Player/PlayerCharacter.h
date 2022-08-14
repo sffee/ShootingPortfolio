@@ -245,4 +245,5 @@ public:
 	FORCEINLINE float GetAOPitch() const { return m_AOPitch; }
 	FORCEINLINE const FHitResult& GetTraceHitResult() const { return m_TraceHitResult; }
 	FORCEINLINE UAnimMontage* GetEquipWeaponMontage() const { return m_EquipWeaponAnimMontage; }
+	FORCEINLINE float GetCrosshairSpread() const { return m_CrosshairSpread; }
 };

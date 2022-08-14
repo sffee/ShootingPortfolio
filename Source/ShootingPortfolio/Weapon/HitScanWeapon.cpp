@@ -10,20 +10,23 @@ AHitScanWeapon::AHitScanWeapon()
 		m_SmokeBeamParticle = SmokeBeam.Object;
 }
 
-void AHitScanWeapon::Fire(float _Spread, const FHitResult& _TargetHitResult)
+void AHitScanWeapon::Fire(const FHitResult& _TraceHitResult)
 {
-	Super::Fire(_Spread, _TargetHitResult);
+	if (m_CanFire == false)
+		return;
 
-	CalcHitResult(_Spread, _TargetHitResult);
+	CalcHitResult();
 
 	PlaySmokeBeamParticle();
 	if (m_HitResult.bBlockingHit)
 		PlayHitParticle(m_HitResult.ImpactPoint);
 
 	ApplyDamage();
+
+	Super::Fire(_TraceHitResult);
 }
 
-void AHitScanWeapon::CalcHitResult(float _Spread, const FHitResult& _TargetHitResult)
+void AHitScanWeapon::CalcHitResult()
 {
 	APlayerCharacter* Player = Cast<APlayerCharacter>(GetOwner());
 	if (Player == nullptr)
@@ -47,7 +50,7 @@ void AHitScanWeapon::CalcHitResult(float _Spread, const FHitResult& _TargetHitRe
 	float DistanceToCharacter = (Player->GetActorLocation() - CrosshairWorldPosition).Size();
 
 	FVector SpreadStart = CrosshairWorldPosition + CrosshairWorldDirection * DistanceToCharacter;
-	SpreadStart += UKismetMathLibrary::RandomUnitVector() * _Spread * 2.f;
+	SpreadStart += UKismetMathLibrary::RandomUnitVector() * Player->GetCrosshairSpread() * 2.f;
 	FVector SpreadEnd = SpreadStart + (CrosshairWorldDirection * m_Range);
 
 	FHitResult SpreadHitResult;

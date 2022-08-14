@@ -40,11 +40,13 @@ void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnTakeAnyDamage.AddDynamic(this, &AMonster::ReceiveDamage);
-	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//OnTakeAnyDamage.AddDynamic(this, &AMonster::ReceiveAnyDamage);
+	//OnTakeRadialDamage.AddDynamic(this, &AMonster::ReceiveRadialDamage);
 
 	m_Status.CurHP = m_Status.MaxHP;
 	m_Status.CurShield = m_Status.MaxShield;
+
+	m_RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	m_RightWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
 	m_LeftWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnBeginOverlap);
@@ -137,25 +139,27 @@ void AMonster::SpawnDamageText(const APlayerCharacter* _Player, float _Damage)
 		DamageTextActor->SetData((int32)_Damage, FLinearColor::Red);
 }
 
-void AMonster::ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser)
+float AMonster::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser)
 {
-	float Damage = _Damage;
+	float ActualDamage = Super::TakeDamage(_DamageAmount, _DamageEvent, _EventInstigator, _DamageCauser);
 
 	if (0.f < m_Status.CurShield)
 	{
-		if (m_Status.CurShield <= Damage)
+		if (m_Status.CurShield <= _DamageAmount)
 		{
-			Damage -= m_Status.CurShield;
+			ActualDamage -= m_Status.CurShield;
 			m_Status.CurShield = 0.f;
 		}
 		else
 		{
-			m_Status.CurShield -= Damage;
-			Damage = 0.f;
+			m_Status.CurShield -= ActualDamage;
+			ActualDamage = 0.f;
 		}
 	}
 
-	m_Status.CurHP -= Damage;
+	m_Status.CurHP -= ActualDamage;
+
+	return ActualDamage;
 }
 
 void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)

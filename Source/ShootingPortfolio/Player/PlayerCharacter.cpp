@@ -93,7 +93,6 @@ APlayerCharacter::APlayerCharacter()
 	m_FollowCamera->SetupAttachment(m_CameraArm);
 	m_FollowCamera->bUsePawnControlRotation = false;
 
-
 	GetMesh()->bReceivesDecals = false;
 }
 
@@ -374,7 +373,7 @@ void APlayerCharacter::Fire()
 	}
 
 	m_CrosshairRecoilValue = FMath::Min(m_CrosshairRecoilValue + m_EquipWeapon->GetCrosshairRecoil(), m_CrosshairRecoilMaxValue);
-	m_EquipWeapon->Fire(m_CrosshairSpread, m_TraceHitResult);
+	m_EquipWeapon->Fire(m_TraceHitResult);
 
 	if (m_FireAnimMontage)
 		PlayMontage(m_FireAnimMontage, TEXT("StartFire"));
@@ -382,7 +381,7 @@ void APlayerCharacter::Fire()
 	if (m_Controller)
 		m_Controller->SubAmmo();
 
-	GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetAutoFireDelay());
+	GetWorldTimerManager().SetTimer(m_AutoFireTimer, this, &APlayerCharacter::FireTimerEnd, m_EquipWeapon->GetFireDelay());
 }
 
 void APlayerCharacter::FireTimerEnd()

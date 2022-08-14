@@ -11,7 +11,8 @@ AWeapon::AWeapon()
 	, m_CameraZoomFOV(0.f)
 	, m_CameraZoomSpeed(20.f)
 	, m_IsAutoFire(true)
-	, m_AutoFireDelay(0.1f)
+	, m_FireDelay(0.1f)
+	, m_CanFire(true)
 	, m_Type(EWeaponType::MAX)
 	, m_IdleFireBlendWeight(0.75f)
 	, m_AimingFireBlendWeight(0.75f)
@@ -41,12 +42,18 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AWeapon::Fire(float _Spread, const FHitResult& _TargetHitResult)
+void AWeapon::Fire(const FHitResult& _TraceHitResult)
 {
+	if (m_CanFire == false)
+		return;
+
 	PlaySound(m_FireSound);
 	PlayMuzzleFlashParticle();
 	PlayCameraShake();
 	PlayFireAnimation();
+
+	m_CanFire = false;
+	GetWorldTimerManager().SetTimer(m_CanFireTimer, this, &AWeapon::CanFireTimerEnd, m_FireDelay);
 }
 
 void AWeapon::SetAmmo(int32 _Ammo)
@@ -126,4 +133,9 @@ void AWeapon::PlayHitParticle(const FVector& _Location)
 		return;
 
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), m_HitParticle, _Location);
+}
+
+void AWeapon::CanFireTimerEnd()
+{
+	m_CanFire = true;
 }

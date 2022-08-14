@@ -19,10 +19,10 @@ public:
 	AHitScanWeapon();
 
 public:
-	virtual void Fire(float _Spread, const FHitResult& _TargetHitResult) override;
+	virtual void Fire(const FHitResult& _TraceHitResult) override;
 
 private:
-	void CalcHitResult(float _Spread, const FHitResult& _TargetHitResult);
+	void CalcHitResult();
 
 private:
 	void PlaySmokeBeamParticle();
