@@ -216,9 +216,9 @@ void APlayerCharacterController::UpdateWaveCountdown(float _DeltaTime)
 
 void APlayerCharacterController::InitAmmo()
 {
-	m_AmmoMap.Add(EWeaponType::SubmachineGun, m_StartAmmo.SubmachineGun);
-	m_AmmoMap.Add(EWeaponType::RocketLauncher, m_StartAmmo.RocketLauncher);
-	m_AmmoMap.Add(EWeaponType::SniperRifle, m_StartAmmo.SniperRifle);
+	m_AmmoMap.Add(EWeaponType::SubmachineGun, FAmmoData(m_StartAmmo.SubmachineGun, m_StartAmmo.SubmachineGun * 10));
+	m_AmmoMap.Add(EWeaponType::RocketLauncher, FAmmoData(m_StartAmmo.RocketLauncher, m_StartAmmo.RocketLauncher * 10));
+	m_AmmoMap.Add(EWeaponType::SniperRifle, FAmmoData(m_StartAmmo.SniperRifle, m_StartAmmo.SniperRifle * 10));
 }
 
 void APlayerCharacterController::UpdateFirstHUD()
@@ -278,6 +278,41 @@ void APlayerCharacterController::AddStamina(float _Value)
 	UpdateStaminaHUD();
 }
 
+void APlayerCharacterController::AddAmmo(int32 _Amount)
+{
+	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
+	if (m_Player == nullptr)
+		return;
+
+	AWeapon* Weapon = m_Player->GetEquipWeapon();
+	if (Weapon == nullptr)
+		return;
+
+	Weapon->AddAmmo(_Amount);
+	UpdateAmmoHUD();
+}
+
+void APlayerCharacterController::AddAmmoMap(EWeaponType _WeaponType, int32 _Amount)
+{
+	if (m_AmmoMap.Contains(_WeaponType) == false)
+		return;
+
+	m_AmmoMap[_WeaponType].CurAmmo = FMath::Clamp(m_AmmoMap[_WeaponType].CurAmmo + _Amount, 0, m_AmmoMap[_WeaponType].MaxAmmo);
+
+	UpdateAmmoHUD();
+}
+
+void APlayerCharacterController::AddAllAmmoRate(float _Rate)
+{
+	for (auto& Ammo : m_AmmoMap)
+	{
+		int32 AddAmmo = Ammo.Value.MaxAmmo * _Rate;
+		Ammo.Value.CurAmmo = FMath::Clamp(Ammo.Value.CurAmmo + AddAmmo, 0, Ammo.Value.MaxAmmo);
+	}
+
+	UpdateAmmoHUD();
+}
+
 void APlayerCharacterController::SubAmmo()
 {
 	m_Player = m_Player == nullptr ? Cast<APlayerCharacter>(GetPawn()) : m_Player;
@@ -310,13 +345,13 @@ void APlayerCharacterController::ReloadFinish()
 	{
 		int32 WeaponAmmo = Weapon->GetAmmo();
 		int32 WeaponMagazine = Weapon->GetMagazine();
-		int32& AmmoMap = m_AmmoMap[Weapon->GetWeaponType()];
+		FAmmoData& AmmoMap = m_AmmoMap[Weapon->GetWeaponType()];
 
 		int32 Ammo = FMath::Clamp(WeaponMagazine - WeaponAmmo, 0, WeaponMagazine);
-		int32 ReloadAmmo = AmmoMap < Ammo ? AmmoMap : Ammo;
+		int32 ReloadAmmo = AmmoMap.CurAmmo < Ammo ? AmmoMap.CurAmmo : Ammo;
 
 		Weapon->AddAmmo(ReloadAmmo);
-		AmmoMap -= ReloadAmmo;
+		AmmoMap.CurAmmo -= ReloadAmmo;
 	}
 
 	UpdateAmmoHUD();
@@ -327,7 +362,7 @@ bool APlayerCharacterController::AmmoMapEmpty(EWeaponType _Type)
 	if (m_AmmoMap.Contains(_Type) == false)
 		return true;
 
-	if (m_AmmoMap[_Type] == 0)
+	if (m_AmmoMap[_Type].CurAmmo == 0)
 		return true;
 
 	return false;
@@ -346,10 +381,14 @@ void APlayerCharacterController::ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex
 		return;
 
 	PlayChangeWeaponAnimation(_Weapon, m_WeaponInventory[_SlotIndex]);
+	_Weapon->GetMesh()->SetVisibility(false);
+	m_WeaponInventory[_SlotIndex]->GetMesh()->SetVisibility(true);
 
 	m_Player->PlayMontage(m_Player->GetEquipWeaponMontage(), TEXT("Equip"));
 	m_Player->EquipWeapon(m_WeaponInventory[_SlotIndex]);
 	m_Player->SetState(EPlayerState::Equipping);
+
+	UpdateAmmoHUD();
 }
 
 void APlayerCharacterController::PlayChangeWeaponAnimation(const AWeapon* _OldWeapon, const AWeapon* _NewWeapon)
@@ -363,6 +402,22 @@ void APlayerCharacterController::PlayChangeWeaponAnimation(const AWeapon* _OldWe
 
 	if (_NewWeapon)
 		m_HUD->m_PlayerOverlayWidget->WeaponInventory->PlayAnimation(GetWeaponSlotAnimation(_NewWeapon));
+}
+
+bool APlayerCharacterController::AmmoMapIsFull() const
+{
+	bool Result = true;
+
+	for (const auto& Ammo : m_AmmoMap)
+	{
+		if (Ammo.Value.CurAmmo != Ammo.Value.MaxAmmo)
+		{
+			Result = false;
+			break;
+		}
+	}
+
+	return Result;
 }
 
 void APlayerCharacterController::UpdateHPHUD()
@@ -390,25 +445,40 @@ void APlayerCharacterController::UpdateAmmoHUD()
 	if (m_HUD == nullptr || m_Player == nullptr)
 		return;
 
-	AWeapon* Weapon = m_Player->GetEquipWeapon();
-	if (Weapon == nullptr)
+	AWeapon* EquipWeapon = m_Player->GetEquipWeapon();
+	if (EquipWeapon == nullptr)
 		return;
 
-	if (Weapon->GetInfinityMagazine())
+	if (EquipWeapon->GetInfinityMagazine())
 	{
-		m_HUD->SetAmmo(Weapon->GetAmmo(), -1);
+		m_HUD->SetAmmo(EquipWeapon->GetAmmo(), -1);
 	}
 	else
 	{
-		EWeaponType WeaponType = Weapon->GetWeaponType();
+		EWeaponType WeaponType = EquipWeapon->GetWeaponType();
 		if (m_AmmoMap.Contains(WeaponType) == false)
 			return;
 
-		m_HUD->SetAmmo(Weapon->GetAmmo(), m_AmmoMap[WeaponType]);
+		m_HUD->SetAmmo(EquipWeapon->GetAmmo(), m_AmmoMap[WeaponType].CurAmmo);
+	}
 
-		int32 Ammo = m_AmmoMap[WeaponType] + Weapon->GetAmmo();
-		UWeaponSlotWidget* SlotWidget = GetWeaponSlotWidget(Weapon);
-		SlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+	for (const auto& Weapon : m_WeaponInventory)
+	{
+		if (Weapon->GetInfinityMagazine())
+		{
+			UWeaponSlotWidget* SlotWidget = GetWeaponSlotWidget(Weapon);
+			SlotWidget->AmmoText->SetText(FText::AsNumber(Weapon->GetAmmo()));
+		}
+		else
+		{
+			EWeaponType WeaponType = Weapon->GetWeaponType();
+			if (m_AmmoMap.Contains(WeaponType) == false)
+				return;
+
+			int32 Ammo = m_AmmoMap[WeaponType].CurAmmo + Weapon->GetAmmo();
+			UWeaponSlotWidget* SlotWidget = GetWeaponSlotWidget(Weapon);
+			SlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+		}
 	}
 }
 
@@ -426,12 +496,16 @@ void APlayerCharacterController::AddWeapon(AWeapon* _Weapon)
 	WeaponSlotWidget->WeaponIconImage->SetVisibility(ESlateVisibility::Visible);
 	WeaponSlotWidget->WeaponIconImage->SetBrushFromTexture(_Weapon->GetWeaponIcon());
 
+	WeaponSlotWidget->AmmoText->SetVisibility(ESlateVisibility::Visible);
+
 	if (m_AmmoMap.Contains(_Weapon->GetWeaponType()))
 	{
-		WeaponSlotWidget->AmmoText->SetVisibility(ESlateVisibility::Visible);
-
-		int32 Ammo = m_AmmoMap[_Weapon->GetWeaponType()] + _Weapon->GetAmmo();
+		int32 Ammo = m_AmmoMap[_Weapon->GetWeaponType()].CurAmmo + _Weapon->GetAmmo();
 		WeaponSlotWidget->AmmoText->SetText(FText::AsNumber(Ammo));
+	}
+	else
+	{
+		WeaponSlotWidget->AmmoText->SetText(FText::AsNumber(_Weapon->GetAmmo()));
 	}
 
 	if (m_WeaponInventory.Num() == 1)

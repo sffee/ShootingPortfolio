@@ -52,10 +52,6 @@ APlayerCharacter::APlayerCharacter()
 	if (PlayerMesh.Succeeded())
 		GetMesh()->SetSkeletalMesh(PlayerMesh.Object);
 
-	static ConstructorHelpers::FClassFinder<AWeapon> DefaultWeapon(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/BP_SubmachineGun.BP_SubmachineGun_C'"));
-	if (DefaultWeapon.Succeeded())
-		m_DefaultWeapon = DefaultWeapon.Class;
-
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireAnimMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/FireMontage.FireMontage'"));
 	if (FireAnimMontage.Succeeded())
 		m_FireAnimMontage = FireAnimMontage.Object;
@@ -71,6 +67,22 @@ APlayerCharacter::APlayerCharacter()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> EquipWeaponMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Player/Animation/EquipWeaponMontage.EquipWeaponMontage'"));
 	if (EquipWeaponMontage.Succeeded())
 		m_EquipWeaponAnimMontage = EquipWeaponMontage.Object;
+
+	static ConstructorHelpers::FClassFinder<AWeapon> Pistol(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/Pistol/BP_Pistol.BP_Pistol_C'"));
+	if (Pistol.Succeeded())
+		m_WeaponList.Add(Pistol.Class);
+
+	static ConstructorHelpers::FClassFinder<AWeapon> SMG(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/BP_SubmachineGun.BP_SubmachineGun_C'"));
+	if (SMG.Succeeded())
+		m_WeaponList.Add(SMG.Class);
+
+	static ConstructorHelpers::FClassFinder<AWeapon> SniperRifle(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SniperRifle/BP_SniperRifle.BP_SniperRifle_C'"));
+	if (SniperRifle.Succeeded())
+		m_WeaponList.Add(SniperRifle.Class);
+
+	static ConstructorHelpers::FClassFinder<AWeapon> RocketLauncher(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/RocketLauncher/BP_RocketLauncher.BP_RocketLauncher_C'"));
+	if (RocketLauncher.Succeeded())
+		m_WeaponList.Add(RocketLauncher.Class);
 
 	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -88.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
@@ -119,16 +131,11 @@ void APlayerCharacter::BeginPlay()
 	if (GetCharacterMovement())
 		m_DefaultMoveSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	
-	AWeapon* DefaultWeapon = SpawnDefaultWeapon();
-	EquipWeapon(DefaultWeapon);
+	WeaponSetting();
 
 	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
 	if (m_Controller)
-	{
 		m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(m_Controller->GetHUD()) : m_HUD;
-		m_Controller->AddWeapon(DefaultWeapon);
-		m_Controller->AddWeapon(SpawnDefaultWeapon());
-	}
 
 	PlayMontage(m_EquipWeaponAnimMontage, TEXT("Equip"));
 }
@@ -170,7 +177,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAction("Key1", IE_Pressed, this, &APlayerCharacter::Key1ButtonPressed);
 	PlayerInputComponent->BindAction("Key2", IE_Pressed, this, &APlayerCharacter::Key2ButtonPressed);
-
+	PlayerInputComponent->BindAction("Key3", IE_Pressed, this, &APlayerCharacter::Key3ButtonPressed);
+	PlayerInputComponent->BindAction("Key4", IE_Pressed, this, &APlayerCharacter::Key4ButtonPressed);
 }
 
 void APlayerCharacter::MoveForward(float _Value)
@@ -295,12 +303,38 @@ void APlayerCharacter::Key2ButtonPressed()
 	ChangeWeapon(m_EquipWeapon, 1);
 }
 
-AWeapon* APlayerCharacter::SpawnDefaultWeapon()
+void APlayerCharacter::Key3ButtonPressed()
 {
-	if (m_DefaultWeapon == nullptr)
-		return nullptr;
+	ChangeWeapon(m_EquipWeapon, 2);
+}
 
-	return GetWorld()->SpawnActor<AWeapon>(m_DefaultWeapon);
+void APlayerCharacter::Key4ButtonPressed()
+{
+	ChangeWeapon(m_EquipWeapon, 3);
+}
+
+void APlayerCharacter::WeaponSetting()
+{
+	if (m_WeaponList.Num() == 0)
+		return;
+
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller == nullptr)
+		return;
+
+	AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(*m_WeaponList.begin());
+	if (DefaultWeapon)
+	{
+		EquipWeapon(DefaultWeapon);
+		m_Controller->AddWeapon(DefaultWeapon);
+	}
+
+	for (int32 i = 1; i < m_WeaponList.Num(); i++)
+	{
+		AWeapon* Weapon = GetWorld()->SpawnActor<AWeapon>(m_WeaponList[i]);
+		m_Controller->AddWeapon(Weapon);
+		Weapon->GetMesh()->SetVisibility(false);
+	}
 }
 
 void APlayerCharacter::EquipWeapon(AWeapon* _Weapon)

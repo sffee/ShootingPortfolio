@@ -57,7 +57,7 @@ private:
 	FPlayerStatus m_Status;
 
 	UPROPERTY(VisibleAnywhere, Category = "Player | Ammo")
-	TMap<EWeaponType, int32> m_AmmoMap;
+	TMap<EWeaponType, FAmmoData> m_AmmoMap;
 
 	UPROPERTY(EditAnywhere, Category = "Player | Ammo")
 	FStartAmmo m_StartAmmo;
@@ -101,6 +101,9 @@ public:
 public:
 	void AddHP(float _Value);
 	void AddStamina(float _Value);
+	void AddAmmo(int32 _Amount);
+	void AddAmmoMap(EWeaponType _WeaponType, int32 _Amount);
+	void AddAllAmmoRate(float _Rate);
 	void SubAmmo();
 	void ReloadFinish();
 	bool AmmoMapEmpty(EWeaponType _Type);
@@ -121,4 +124,8 @@ private:
 	UWeaponSlotWidget* GetWeaponSlotWidget(const AWeapon* _Weapon);
 	UWidgetAnimation* GetWeaponSlotAnimation(const AWeapon* _Weapon);
 	void PlayChangeWeaponAnimation(const AWeapon* _OldWeapon, const AWeapon* _NewWeapon);
+
+public:
+	FORCEINLINE bool HPIsFull() const { return m_Status.CurHP == m_Status.MaxHP; }
+	bool AmmoMapIsFull() const;
 };

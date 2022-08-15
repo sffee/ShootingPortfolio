@@ -9,8 +9,6 @@
 AMonster::AMonster()
 	: m_IsAttacking(false)
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	AIControllerClass = AMonsterAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
@@ -40,9 +38,6 @@ void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//OnTakeAnyDamage.AddDynamic(this, &AMonster::ReceiveAnyDamage);
-	//OnTakeRadialDamage.AddDynamic(this, &AMonster::ReceiveRadialDamage);
-
 	m_Status.CurHP = m_Status.MaxHP;
 	m_Status.CurShield = m_Status.MaxShield;
 
@@ -56,12 +51,6 @@ void AMonster::BeginPlay()
 	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
 	if (AnimInst)
 		AnimInst->OnMontageEnded.AddDynamic(this, &AMonster::OnAttackMontageEnded);
-}
-
-void AMonster::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void AMonster::InitAttackInfoDataTable()

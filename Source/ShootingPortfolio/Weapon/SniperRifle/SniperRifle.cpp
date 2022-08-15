@@ -6,7 +6,7 @@ ASniperRifle::ASniperRifle()
 	if (WeaponMesh.Succeeded())
 		GetMesh()->SetSkeletalMesh(WeaponMesh.Object);
 
-	static ConstructorHelpers::FObjectFinder<UTexture2D> WeaponIcon(TEXT("Texture2D'/Game/Game/Asset/Texture/Icon/RocketLauncherIcon.RocketLauncherIcon'"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> WeaponIcon(TEXT("Texture2D'/Game/Game/Asset/Texture/Icon/SniperRifleIcon.SniperRifleIcon'"));
 	if (WeaponIcon.Succeeded())
 		m_WeaponIcon = WeaponIcon.Object;
 

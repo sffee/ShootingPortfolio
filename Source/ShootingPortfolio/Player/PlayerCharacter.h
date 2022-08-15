@@ -95,7 +95,7 @@ private:
 
 private:
 	UPROPERTY(EditAnywhere, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<AWeapon> m_DefaultWeapon;
+	TArray<TSubclassOf<AWeapon>> m_WeaponList;
 
 	UPROPERTY(VisibleAnywhere, Category = Weapon)
 	AWeapon* m_EquipWeapon;
@@ -178,9 +178,11 @@ private:
 
 	void Key1ButtonPressed();
 	void Key2ButtonPressed();
+	void Key3ButtonPressed();
+	void Key4ButtonPressed();
 
 private:
-	AWeapon* SpawnDefaultWeapon();
+	void WeaponSetting();
 
 	void Aiming();
 	void StopAiming();

@@ -7,8 +7,6 @@
 AProjectile::AProjectile()
 	: m_LifeSpan(0.f)
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	m_CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	SetRootComponent(m_CollisionBox);
 	m_CollisionBox->SetCollisionProfileName(TEXT("PlayerProjectile"));
@@ -28,12 +26,6 @@ void AProjectile::BeginPlay()
 	SpawnTrailSystem();
 
 	m_CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
-}
-
-void AProjectile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void AProjectile::SpawnTrailSystem()

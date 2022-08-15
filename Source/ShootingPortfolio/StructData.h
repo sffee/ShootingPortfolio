@@ -144,3 +144,24 @@ struct FMonsterBuffInfo : public FTableRowBase
 	UPROPERTY(EditAnywhere)
 	float Cooltime;
 };
+
+USTRUCT(BlueprintType)
+struct FAmmoData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	int32 CurAmmo;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxAmmo;
+
+	FAmmoData()
+	{
+	}
+
+	FAmmoData(int32 _CurAmmo, int32 _MaxAmmo)
+		: CurAmmo(_CurAmmo), MaxAmmo(_MaxAmmo)
+	{
+	}
+};
