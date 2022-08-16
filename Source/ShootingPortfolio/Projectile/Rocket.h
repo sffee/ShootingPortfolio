@@ -8,6 +8,10 @@ UCLASS()
 class SHOOTINGPORTFOLIO_API ARocket : public AProjectile
 {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY(EditAnywhere, Category = Hit)
+	float m_DamageRadius;
 	
 public:
 	ARocket();

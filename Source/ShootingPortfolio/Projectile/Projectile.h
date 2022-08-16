@@ -44,9 +44,6 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, Category = Hit)
 	float m_Damage;
-
-	UPROPERTY(EditAnywhere, Category = Hit)
-	float m_DamageRadius;
 	
 public:	
 	AProjectile();

@@ -16,6 +16,12 @@
 			]
 		}
 	],
+	"Plugins": [
+		{
+			"Name": "ApexDestruction",
+			"Enabled": true
+		}
+	],
 	"TargetPlatforms": [
 		"Android",
 		"IOS",

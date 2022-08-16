@@ -31,11 +31,14 @@ private:
 	UPROPERTY()
 	USniperRifleScopeWidget* m_SniperRifleScopeWidget;
 
-	UPROPERTY(EditAnywhere, Category = SniperRifle)
+	UPROPERTY(EditAnywhere, Category = Weapon)
 	USoundCue* m_SniperRifleZoomInSound;
 
-	UPROPERTY(EditAnywhere, Category = SniperRifle)
+	UPROPERTY(EditAnywhere, Category = Weapon)
 	USoundCue* m_SniperRifleZoomOutSound;
+
+	UPROPERTY(EditAnywhere, Category = Weapon)
+	USoundCue* m_WeaponEquipSound;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Player | Weapon")

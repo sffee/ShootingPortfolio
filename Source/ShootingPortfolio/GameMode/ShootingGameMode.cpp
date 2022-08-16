@@ -6,6 +6,10 @@
 #include "ShootingPortfolio/Monster/Monster.h"
 #include "Components/TextBlock.h"
 
+#include "LevelSequence/Public/LevelSequenceActor.h"
+#include "LevelSequence/Public/LevelSequence.h"
+#include "LevelSequence/Public/LevelSequencePlayer.h"
+
 AShootingGameMode::AShootingGameMode()
 	: m_Wave(1)
 	, m_Phase2Wave(3)
@@ -37,6 +41,13 @@ AShootingGameMode::AShootingGameMode()
 void AShootingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (m_LevelSequence)
+	{
+		m_SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), m_LevelSequence, FMovieSceneSequencePlaybackSettings(), m_SequenceActor);
+		m_SequencePlayer->Play();
+	}
+
 	return;
 	InitSpawnPointMap();
 

@@ -23,11 +23,24 @@ struct FMonsterSpawnPointData
 
 class UPlayerOverlayWidget;
 class APlayerCharacterController;
+class ULevelSequence;
+class ULevelSequencePlayer;
+class ALevelSequenceActor;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API AShootingGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+	
+private:
+	UPROPERTY(EditAnywhere)
+	ULevelSequence* m_LevelSequence;
+
+	UPROPERTY(EditAnywhere)
+	ALevelSequenceActor* m_SequenceActor;
+
+	UPROPERTY(EditAnywhere)
+	ULevelSequencePlayer* m_SequencePlayer;
 	
 private:
 	UPlayerOverlayWidget* m_PlayerOverlayWidget;

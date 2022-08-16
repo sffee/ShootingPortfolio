@@ -37,6 +37,10 @@ APlayerCharacterController::APlayerCharacterController()
 	static ConstructorHelpers::FObjectFinder<USoundCue> SniperRifleZoomOutSound(TEXT("SoundCue'/Game/MilitaryWeapSilver/Sound/SniperRifle/Cues/SniperRifle_ZoomOut_Cue.SniperRifle_ZoomOut_Cue'"));
 	if (SniperRifleZoomOutSound.Succeeded())
 		m_SniperRifleZoomOutSound = SniperRifleZoomOutSound.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundCue> WeaponEquipSound(TEXT("SoundCue'/Game/Game/Asset/Sound/Rifle/sw_Wep_AR_Equip_03_Cue.sw_Wep_AR_Equip_03_Cue'"));
+	if (WeaponEquipSound.Succeeded())
+		m_WeaponEquipSound = WeaponEquipSound.Object;
 }
 
 void APlayerCharacterController::BeginPlay()
@@ -389,6 +393,9 @@ void APlayerCharacterController::ChangeWeapon(AWeapon* _Weapon, int32 _SlotIndex
 	m_Player->SetState(EPlayerState::Equipping);
 
 	UpdateAmmoHUD();
+
+	if (m_WeaponEquipSound)
+		UGameplayStatics::PlaySound2D(GetWorld(), m_WeaponEquipSound);
 }
 
 void APlayerCharacterController::PlayChangeWeaponAnimation(const AWeapon* _OldWeapon, const AWeapon* _NewWeapon)

@@ -18,7 +18,7 @@ ASniperRifle::ASniperRifle()
 	if (HitParticle.Succeeded())
 		m_HitParticle = HitParticle.Object;
 
-	static ConstructorHelpers::FClassFinder<UCameraShakeBase> FireCameraShake(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SubmachineGun/CameraShake_SubmachineGun.CameraShake_SubmachineGun_C'"));
+	static ConstructorHelpers::FClassFinder<UCameraShakeBase> FireCameraShake(TEXT("Blueprint'/Game/Game/Blueprints/Weapon/SniperRifle/CameraShake_SniperRifle.CameraShake_SniperRifle_C'"));
 	if (FireCameraShake.Succeeded())
 		m_FireCameraShake = FireCameraShake.Class;
 

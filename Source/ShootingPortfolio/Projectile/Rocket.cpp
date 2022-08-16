@@ -3,6 +3,7 @@
 #include "NiagaraSystem.h"
 
 ARocket::ARocket()
+	: m_DamageRadius(250.f)
 {	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RocketMesh(TEXT("StaticMesh'/Game/MilitaryWeapSilver/Weapons/RocketLauncherA_Ammo.RocketLauncherA_Ammo'"));
 	if (RocketMesh.Succeeded())
@@ -24,7 +25,6 @@ ARocket::ARocket()
 	m_ProjectileMovementComponent->MaxSpeed = 1500.f;
 	m_ProjectileMovementComponent->ProjectileGravityScale = 0.f;
 
-	m_DamageRadius = 500.f;
 	m_LifeSpan = 5.f;
 }
 
