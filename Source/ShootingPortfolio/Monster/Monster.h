@@ -74,9 +74,10 @@ public:
 
 public:
 	void PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName);
-	void SpawnDamageText(const APlayerCharacter* _Player, float _Damage);
+	void SpawnDamageText(float _Damage, const FVector& _SpawnLocation, bool _IsHeadShot);
 
 protected:
+	void ApplyDamage(APlayerCharacter* _Player);
 	virtual float TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser) override;
 
 	UFUNCTION()

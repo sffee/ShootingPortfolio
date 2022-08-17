@@ -165,3 +165,10 @@ void UKhaimeraAnimInstance::AnimNotify_SpawnMonsterHowl()
 			Circle->MonsterSpawn();
 	}
 }
+
+void UKhaimeraAnimInstance::AnimNotify_JumpAttack()
+{
+	AKhaimera* Monster = Cast<AKhaimera>(TryGetPawnOwner());
+	if (Monster)
+		Monster->JumpAttack();
+}

@@ -37,7 +37,7 @@ ASniperRifle::ASniperRifle()
 	m_Type = EWeaponType::SniperRifle;
 	m_Damage = 50;
 	m_HeadDamageRate = 1.5f;
-	m_Range = 2000.f;
+	m_Range = 4000.f;
 	m_AimingFireBlendWeight = 0.9f;
 	m_FireDelay = 0.5f;
 	m_IsAutoFire = false;

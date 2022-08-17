@@ -108,8 +108,7 @@ void AHitScanWeapon::ApplyDamage()
 
 		UE_LOG(LogTemp, Log, TEXT("%s"), *m_HitResult.BoneName.ToString());
 
-		UGameplayStatics::ApplyDamage(Monster, Damage, PlayerController, this, UDamageType::StaticClass());
-
-		SpawnDamageText(m_HitResult, Damage, IsHeadShot);
+		UGameplayStatics::ApplyPointDamage(Monster, Damage, Monster->GetActorLocation(), m_HitResult, PlayerController, this, UDamageType::StaticClass());
+		//UGameplayStatics::ApplyDamage(Monster, Damage, PlayerController, this, UDamageType::StaticClass());
 	}
 }

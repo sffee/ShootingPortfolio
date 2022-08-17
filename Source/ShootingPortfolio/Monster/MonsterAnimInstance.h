@@ -38,6 +38,12 @@ public:
 	void AnimNotify_LeftWeaponAttackEnd();
 
 	UFUNCTION()
+	void AnimNotify_WeaponAttack();
+
+	UFUNCTION()
+	void AnimNotify_WeaponAttackEnd();
+
+	UFUNCTION()
 	void AnimNotify_Movable();
 
 	UFUNCTION()

@@ -18,7 +18,7 @@
 #include "ShootingPortfolio/Monster/SpawnMonsterData.h"
 
 APlayerCharacterController::APlayerCharacterController()
-	: m_StartWaveCountTime(5.f)
+	: m_StartWaveCountTime(2.f)
 	, m_RemainingWaveCountTime(0.f)
 	, m_PrevReminingWaveCountTime(0.f)
 	, m_FirstHUDUpdateComplete(false)
@@ -153,15 +153,23 @@ void APlayerCharacterController::WavePlay()
 	if (GameMode == nullptr)
 		return;
 
-	m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetVisibility(ESlateVisibility::Hidden);
-	m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetVisibility(ESlateVisibility::Visible);
+	if (GameMode->IsBossWave())
+	{
+		SetHUDVisibility(false);
+		GameMode->BossWave();
+	}
+	else
+	{
+		m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetVisibility(ESlateVisibility::Hidden);
+		m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetVisibility(ESlateVisibility::Visible);
 
-	FString WaveStr = FString::Printf(TEXT("Wave %d"), GameMode->GetWaveNumber());
-	m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetText(FText::FromString(WaveStr));
+		FString WaveStr = FString::Printf(TEXT("Wave %d"), GameMode->GetWaveNumber());
+		m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetText(FText::FromString(WaveStr));
 
-	m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->SetVisibility(ESlateVisibility::Visible);
+		m_HUD->m_PlayerOverlayWidget->WaveMonsterCount->SetVisibility(ESlateVisibility::Visible);
 
-	GameMode->SpawnStart();
+		GameMode->SpawnStart();
+	}
 }
 
 void APlayerCharacterController::WaveComplete()
@@ -220,9 +228,9 @@ void APlayerCharacterController::UpdateWaveCountdown(float _DeltaTime)
 
 void APlayerCharacterController::InitAmmo()
 {
-	m_AmmoMap.Add(EWeaponType::SubmachineGun, FAmmoData(m_StartAmmo.SubmachineGun, m_StartAmmo.SubmachineGun * 10));
-	m_AmmoMap.Add(EWeaponType::RocketLauncher, FAmmoData(m_StartAmmo.RocketLauncher, m_StartAmmo.RocketLauncher * 10));
-	m_AmmoMap.Add(EWeaponType::SniperRifle, FAmmoData(m_StartAmmo.SniperRifle, m_StartAmmo.SniperRifle * 10));
+	m_AmmoMap.Add(EWeaponType::SubmachineGun, m_StartAmmo.SubmachineGun);
+	m_AmmoMap.Add(EWeaponType::RocketLauncher, m_StartAmmo.RocketLauncher);
+	m_AmmoMap.Add(EWeaponType::SniperRifle, m_StartAmmo.SniperRifle);
 }
 
 void APlayerCharacterController::UpdateFirstHUD()
@@ -544,12 +552,24 @@ void APlayerCharacterController::SetMonsterCountList(const TMap<UObject*, int32>
 	}
 }
 
+void APlayerCharacterController::SetHUDVisibility(bool _Set)
+{
+	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
+	if (m_HUD == nullptr || m_HUD->m_PlayerOverlayWidget == nullptr)
+		return;
+
+	if (_Set)
+		m_HUD->SetHUDVisibility(true);
+	else
+		m_HUD->SetHUDVisibility(false);
+}
+
 UWeaponSlotWidget* APlayerCharacterController::GetWeaponSlotWidget(const AWeapon* _Weapon)
 {
 	m_HUD = m_HUD == nullptr ? Cast<AShootingHUD>(GetHUD()) : m_HUD;
 	if (m_HUD == nullptr || m_HUD->m_PlayerOverlayWidget == nullptr || _Weapon == nullptr)
 		return nullptr;
-	
+
 	UWeaponSlotWidget* Widget = nullptr;
 
 	switch (_Weapon->GetInventorySlotIndex())

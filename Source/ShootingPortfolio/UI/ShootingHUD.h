@@ -47,6 +47,7 @@ public:
 	void SetStamina(float _CurStamina, float _MaxStamina);
 	void SetWeaponName(FString _Name);
 	void SetAmmo(int32 _Ammo, int32 _Capacity);
+	void SetHUDVisibility(bool _Set);
 
 public:
 	void SetCrosshairType(const ECrosshairType _Type);

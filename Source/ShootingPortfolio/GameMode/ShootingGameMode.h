@@ -33,13 +33,13 @@ class SHOOTINGPORTFOLIO_API AShootingGameMode : public AGameModeBase
 	GENERATED_BODY()
 	
 private:
-	UPROPERTY(EditAnywhere)
-	ULevelSequence* m_LevelSequence;
+	UPROPERTY(EditAnywhere, Category = LevelSequence)
+	ULevelSequence* m_BossAppearLevelSequence;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	ALevelSequenceActor* m_SequenceActor;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	ULevelSequencePlayer* m_SequencePlayer;
 	
 private:
@@ -108,6 +108,10 @@ private:
 
 public:
 	void SpawnStart();
+	void BossWave();
+
+	UFUNCTION()
+	void BossSequenceEnd();
 
 private:
 	void SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int32 _Index);
@@ -121,4 +125,5 @@ public:
 
 public:
 	FORCEINLINE int32 GetWaveNumber() const { return m_Wave; }
+	FORCEINLINE bool IsBossWave() const { return m_Wave == m_BossWave; }
 };

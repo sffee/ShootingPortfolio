@@ -116,21 +116,64 @@ void AMonster::PlayMontage(UAnimMontage* _AnimMontage, FName _SectionName)
 	}
 }
 
-void AMonster::SpawnDamageText(const APlayerCharacter* _Player, float _Damage)
+void AMonster::SpawnDamageText(float _Damage, const FVector& _SpawnLocation, bool _IsHeadShot)
 {
+	FLinearColor TextColor = FLinearColor::White;
+	if (_IsHeadShot)
+	{
+		FLinearColor OrangeColor = FLinearColor(1.f, 0.647, 0.f, 1.f);
+		TextColor = OrangeColor;
+	}
+
 	float RandX = FMath::FRandRange(-30.f, 30.f);
 	float RandY = FMath::FRandRange(-30.f, 30.f);
 
-	FVector SpawnLocation = _Player->GetActorLocation() + FVector(0.f, 0.f, _Player->GetCapsuleComponent()->GetScaledCapsuleHalfHeight()) + FVector(RandX, RandY, 0.f);
+	FVector SpawnLocation = _SpawnLocation + FVector(RandX, RandY, 0.f);
 
 	ADamageTextActor* DamageTextActor = GetWorld()->SpawnActor<ADamageTextActor>(ADamageTextActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
 	if (DamageTextActor)
-		DamageTextActor->SetData((int32)_Damage, FLinearColor::Red);
+		DamageTextActor->SetData((int32)_Damage, TextColor);
+}
+
+void AMonster::ApplyDamage(APlayerCharacter* _Player)
+{
+	if (_Player == nullptr || Controller == nullptr)
+		return;
+
+	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GameInstance == nullptr)
+		return;
+
+	UDataTable* AttackInfoDataTable = GameInstance->GetMonsterAttackInfoDataTable(m_Name);
+	if (AttackInfoDataTable == nullptr)
+		return;
+
+	FMonsterAttackInfo* AttackInfo = AttackInfoDataTable->FindRow<FMonsterAttackInfo>(m_CurPlayAttackSectionName, TEXT(""));
+	if (AttackInfo == nullptr)
+		return;
+
+	UGameplayStatics::ApplyDamage(_Player, AttackInfo->Damage, Controller, this, UDamageType::StaticClass());
 }
 
 float AMonster::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(_DamageAmount, _DamageEvent, _EventInstigator, _DamageCauser);
+
+	bool IsHeadShot = false;
+	FVector SpawnLocation = GetActorLocation();
+	if (_DamageEvent.IsOfType(FPointDamageEvent::ClassID))
+	{
+		const FPointDamageEvent* PointDamageEvent = static_cast<const FPointDamageEvent*>(&_DamageEvent);
+		if (PointDamageEvent)
+		{
+			if (PointDamageEvent->HitInfo.BoneName == FName("head"))
+				IsHeadShot = true;
+
+			SpawnLocation = PointDamageEvent->HitInfo.ImpactPoint;
+		}
+	}
+
+	SpawnDamageText(ActualDamage, SpawnLocation, IsHeadShot);
 
 	if (0.f < m_Status.CurShield)
 	{
@@ -153,24 +196,7 @@ float AMonster::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent
 
 void AMonster::OnBeginOverlap(UPrimitiveComponent* _PrimitiveComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)
 {
-	APlayerCharacter* Player = Cast<APlayerCharacter>(_OtherActor);
-	if (Player == nullptr || Controller == nullptr)
-		return;
-
-	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GameInstance == nullptr)
-		return;
-
-	UDataTable* AttackInfoDataTable = GameInstance->GetMonsterAttackInfoDataTable(m_Name);
-	if (AttackInfoDataTable == nullptr)
-		return;
-
-	FMonsterAttackInfo* AttackInfo = AttackInfoDataTable->FindRow<FMonsterAttackInfo>(m_CurPlayAttackSectionName, TEXT(""));
-	if (AttackInfo == nullptr)
-		return;
-
-	SpawnDamageText(Player, AttackInfo->Damage);
-	UGameplayStatics::ApplyDamage(Player, AttackInfo->Damage, Controller, this, UDamageType::StaticClass());
+	ApplyDamage(Cast<APlayerCharacter>(_OtherActor));
 }
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* _Montage, bool _bInterrupted)

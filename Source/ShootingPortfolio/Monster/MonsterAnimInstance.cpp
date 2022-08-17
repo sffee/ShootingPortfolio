@@ -55,6 +55,26 @@ void UMonsterAnimInstance::AnimNotify_LeftWeaponAttackEnd()
 		m_Monster->LeftWeaponCollisionDisable();
 }
 
+void UMonsterAnimInstance::AnimNotify_WeaponAttack()
+{
+	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
+	if (m_Monster)
+	{
+		m_Monster->RightWeaponCollisionEnable();
+		m_Monster->LeftWeaponCollisionEnable();
+	}
+}
+
+void UMonsterAnimInstance::AnimNotify_WeaponAttackEnd()
+{
+	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
+	if (m_Monster)
+	{
+		m_Monster->RightWeaponCollisionDisable();
+		m_Monster->LeftWeaponCollisionDisable();
+	}
+}
+
 void UMonsterAnimInstance::AnimNotify_Movable()
 {
 	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;

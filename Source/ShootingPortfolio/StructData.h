@@ -45,7 +45,7 @@ struct FPlayerStatus
 
 	FPlayerStatus()
 		: CurHP(0.f)
-		, MaxHP(100.f)
+		, MaxHP(200.f)
 		, CurStamina(0.f)
 		, MaxStamina(100.f)
 	{
@@ -74,28 +74,6 @@ struct FMonsterStatus
 		, MaxHP(0.f)
 		, CurShield(0.f)
 		, MaxShield(0.f)
-	{
-	}
-};
-
-USTRUCT(BlueprintType)
-struct FStartAmmo
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere)
-	int32 SubmachineGun;
-
-	UPROPERTY(EditAnywhere)
-	int32 RocketLauncher;
-
-	UPROPERTY(EditAnywhere)
-	int32 SniperRifle;
-
-	FStartAmmo()
-		: SubmachineGun(60)
-		, RocketLauncher(18)
-		, SniperRifle(50)
 	{
 	}
 };
@@ -162,6 +140,28 @@ struct FAmmoData
 
 	FAmmoData(int32 _CurAmmo, int32 _MaxAmmo)
 		: CurAmmo(_CurAmmo), MaxAmmo(_MaxAmmo)
+	{
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FStartAmmo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FAmmoData SubmachineGun;
+
+	UPROPERTY(EditAnywhere)
+	FAmmoData RocketLauncher;
+
+	UPROPERTY(EditAnywhere)
+	FAmmoData SniperRifle;
+
+	FStartAmmo()
+		: SubmachineGun({ 30, 600 })
+		, RocketLauncher({ 3, 18 })
+		, SniperRifle({ 5, 30 })
 	{
 	}
 };

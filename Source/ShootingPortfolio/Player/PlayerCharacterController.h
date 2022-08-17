@@ -122,6 +122,7 @@ public:
 
 public:
 	void SetMonsterCountList(const TMap<UObject*, int32>& _MonsterMap);
+	void SetHUDVisibility(bool _Set);
 
 private:
 	UWeaponSlotWidget* GetWeaponSlotWidget(const AWeapon* _Weapon);
@@ -131,4 +132,6 @@ private:
 public:
 	FORCEINLINE bool HPIsFull() const { return m_Status.CurHP == m_Status.MaxHP; }
 	bool AmmoMapIsFull() const;
+	FORCEINLINE float GetHP() const { return m_Status.CurHP; }
+	FORCEINLINE float GetStamina() const { return m_Status.CurStamina; }
 };

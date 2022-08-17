@@ -4,11 +4,14 @@
 #include "ShootingPortfolio/Decal/WarningMark.h"
 #include "ShootingPortfolio/Monster/Khaimera/SpawnMonster/SpawnMonsterCircle.h"
 #include "ShootingPortfolio/UI/BossMonsterHPBarWidget.h"
+#include "ShootingPortfolio/Player/PlayerCharacter.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 
 AKhaimera::AKhaimera()
 	: m_SpawnMonsterPattern(false)
+	, m_JumpAttackRange(600)
+	, m_JumpAttackOffset(300.f)
 {
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> KhaimeraMesh(TEXT("SkeletalMesh'/Game/ParagonKhaimera/Characters/Heroes/Khaimera/Skins/Tier2/GruxPelt/Meshes/Khaimera_GruxPelt.Khaimera_GruxPelt'"));
 	if (KhaimeraMesh.Succeeded())
@@ -99,6 +102,16 @@ void AKhaimera::DestroyWarningMark()
 		return;
 
 	m_WarningMark->Destroy();
+}
+
+void AKhaimera::JumpAttack()
+{
+	FVector AttackLocation = GetActorLocation() + (GetActorForwardVector() * m_JumpAttackOffset);
+
+	FHitResult HitResult;
+	GetWorld()->SweepSingleByChannel(HitResult, AttackLocation, AttackLocation, FQuat::Identity, COLLISION_MONSTERATTACKTRACE, FCollisionShape::MakeSphere(m_JumpAttackRange));
+
+	ApplyDamage(Cast<APlayerCharacter>(HitResult.Actor));
 }
 
 void AKhaimera::UpdateHPBarWidget()

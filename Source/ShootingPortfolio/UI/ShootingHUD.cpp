@@ -118,6 +118,19 @@ void AShootingHUD::SetAmmo(int32 _Ammo, int32 _Capacity)
 	m_PlayerOverlayWidget->SetAmmo(_Ammo, _Capacity);
 }
 
+void AShootingHUD::SetHUDVisibility(bool _Set)
+{
+	if (m_PlayerOverlayWidget == nullptr)
+		return;
+
+	m_DrawCrosshair = _Set;
+	
+	if (_Set)
+		m_PlayerOverlayWidget->SetVisibility(ESlateVisibility::Visible);
+	else
+		m_PlayerOverlayWidget->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void AShootingHUD::SetCrosshairType(const ECrosshairType _Type)
 {
 	UShootingGameInstance* GameInstance = Cast<UShootingGameInstance>(UGameplayStatics::GetGameInstance(this));

@@ -14,3 +14,5 @@
 #define COLLISION_MONSTER ECC_GameTraceChannel1
 #define COLLISION_PLAYERBULLET ECC_GameTraceChannel2
 #define COLLISION_PLAYER ECC_GameTraceChannel3
+#define COLLISION_MONSTERATTACK ECC_GameTraceChannel4
+#define COLLISION_MONSTERATTACKTRACE ECC_GameTraceChannel9

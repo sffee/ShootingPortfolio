@@ -20,6 +20,12 @@ private:
 	UPROPERTY()
 	AWarningMark* m_WarningMark;
 
+	UPROPERTY(EditAnywhere)
+	float m_JumpAttackRange;
+
+	UPROPERTY(EditAnywhere)
+	float m_JumpAttackOffset;
+
 private:
 	TSubclassOf<UUserWidget> m_BossMonsterHPBarWidgetClass;
 
@@ -38,6 +44,7 @@ public:
 public:
 	void CreateWarningMark(const FVector& _Location);
 	void DestroyWarningMark();
+	void JumpAttack();
 
 private:
 	void UpdateHPBarWidget();

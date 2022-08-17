@@ -59,25 +59,6 @@ void AWeapon::AddAmmo(int32 _Ammo)
 	m_Ammo += _Ammo;
 }
 
-void AWeapon::SpawnDamageText(const FHitResult& _HitResult, float _Damage,  bool _IsHeadShot)
-{
-	FLinearColor TextColor = FLinearColor::White;
-	if (_IsHeadShot)
-	{
-		FLinearColor OrangeColor = FLinearColor(1.f, 0.647, 0.f, 1.f);
-		TextColor = OrangeColor;
-	}
-	
-	float RandX = FMath::FRandRange(-30.f, 30.f);
-	float RandY = FMath::FRandRange(-30.f, 30.f);
-
-	FVector SpawnLocation = _HitResult.ImpactPoint + FVector(RandX, RandY, 0.f);
-
-	ADamageTextActor* DamageTextActor = GetWorld()->SpawnActor<ADamageTextActor>(ADamageTextActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
-	if (DamageTextActor)
-		DamageTextActor->SetData((int32)_Damage, TextColor);
-}
-
 void AWeapon::PlaySound(USoundCue* _Sound)
 {
 	if (_Sound == nullptr)

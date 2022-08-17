@@ -63,6 +63,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Info)
 	bool m_StaminaRestore;
 
+	UPROPERTY(EditAnywhere, Category = Info)
+	float m_RollDiveConsumeStamina;
+
 	FTimerHandle m_StaminaRetoreTimer;
 	
 private:
@@ -221,6 +224,7 @@ private:
 
 private:
 	void StartStaminaRestore();
+	void SpawnDamageText(float _Damage, const FVector& _SpawnLocation);
 
 private:
 	void TurnInPlace(float _DeltaTime);
@@ -230,8 +234,7 @@ public:
 	void PlayHitParticle(AActor* _Actor);
 
 public:
-	UFUNCTION()
-	virtual void ReceiveDamage(AActor* _DamagedActor, float _Damage, const UDamageType* _DamageType, class AController* _InstigatorController, AActor* _DamageCauser);
+	virtual float TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEvent, AController* _EventInstigator, AActor* _DamageCauser) override;
 
 public:
 	FORCEINLINE void SetState(EPlayerState _State) { m_State = _State; }

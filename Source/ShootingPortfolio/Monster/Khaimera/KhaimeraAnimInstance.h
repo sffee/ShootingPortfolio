@@ -66,4 +66,7 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_SpawnMonsterHowl();
+
+	UFUNCTION()
+	void AnimNotify_JumpAttack();
 };

@@ -4,6 +4,7 @@
 #include "ShootingPortfolio/UI/ShootingHUD.h"
 #include "ShootingPortfolio/SpawnPoint/MonsterSpawnPoint.h"
 #include "ShootingPortfolio/Monster/Monster.h"
+#include "ShootingPortfolio/Destructible/BossDoor.h"
 #include "Components/TextBlock.h"
 
 #include "LevelSequence/Public/LevelSequenceActor.h"
@@ -35,6 +36,10 @@ AShootingGameMode::AShootingGameMode()
 	if (WaveDataTable.Succeeded())
 		m_WaveDataTable = WaveDataTable.Object;
 
+	static ConstructorHelpers::FObjectFinder<ULevelSequence> BossAppearLevelSequence(TEXT("LevelSequence'/Game/Game/Blueprints/Sequencer/BossSequence.BossSequence'"));
+	if (BossAppearLevelSequence.Succeeded())
+		m_BossAppearLevelSequence = BossAppearLevelSequence.Object;
+
 	HUDClass = AShootingHUD::StaticClass();
 }
 
@@ -42,13 +47,6 @@ void AShootingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (m_LevelSequence)
-	{
-		m_SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), m_LevelSequence, FMovieSceneSequencePlaybackSettings(), m_SequenceActor);
-		m_SequencePlayer->Play();
-	}
-
-	return;
 	InitSpawnPointMap();
 
 	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
@@ -113,6 +111,8 @@ void AShootingGameMode::ResetData()
 	m_SpawnCompleteMonsterCount = 0;
 	m_NeedSpawnMonsterCount = 0;
 	m_AliveMonsterCount = 0;
+
+	m_SpawnComplete = false;
 }
 
 void AShootingGameMode::SpawnStart()
@@ -151,6 +151,30 @@ void AShootingGameMode::SpawnStart()
 	}
 }
 
+void AShootingGameMode::BossWave()
+{
+	if (m_BossAppearLevelSequence)
+	{
+		m_SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), m_BossAppearLevelSequence, FMovieSceneSequencePlaybackSettings(), m_SequenceActor);
+		m_SequencePlayer->OnFinished.AddDynamic(this, &AShootingGameMode::BossSequenceEnd);
+
+		m_SequencePlayer->Play();
+	}
+}
+
+void AShootingGameMode::BossSequenceEnd()
+{
+	AActor* BossDoor = UGameplayStatics::GetActorOfClass(GetWorld(), ABossDoor::StaticClass());
+	if (BossDoor)
+		BossDoor->Destroy();
+
+	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
+	if (m_PlayerController)
+		m_PlayerController->SetHUDVisibility(true);
+
+	SpawnStart();
+}
+
 void AShootingGameMode::SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int32 _Index)
 {
 	if (_Monster == nullptr || m_SpawnDatas[_Index].SpawnCount <= m_SpawnCountMap[_Monster->GetDefaultObject()])
@@ -161,23 +185,35 @@ void AShootingGameMode::SpawnMonsterProcess(TSubclassOf<AMonster> _Monster, int3
 	
 	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
 	
-	for (int32 i = 0; i < m_SpawnPointCount; i++)
+	if (IsBossWave())
 	{
-		SpawnMonster(_Monster, m_SpawnPointMap[i]);
+		SpawnMonster(_Monster, m_SpawnPointMap[2]);
 
 		m_SpawnCountMap[_Monster->GetDefaultObject()]++;
 		m_AliveMonsterMap[_Monster->GetDefaultObject()]++;
 		m_AliveMonsterCount++;
 		m_SpawnCompleteMonsterCount++;
+	}
+	else
+	{
+		for (int32 i = 0; i < m_SpawnPointCount; i++)
+		{
+			SpawnMonster(_Monster, m_SpawnPointMap[i]);
 
-		if (m_PlayerController)
-			m_PlayerController->SetMonsterCountList(m_AliveMonsterMap);
+			m_SpawnCountMap[_Monster->GetDefaultObject()]++;
+			m_AliveMonsterMap[_Monster->GetDefaultObject()]++;
+			m_AliveMonsterCount++;
+			m_SpawnCompleteMonsterCount++;
 
-		if (m_SpawnCompleteMonsterCount == m_NeedSpawnMonsterCount)
-			m_SpawnComplete = true;
+			if (m_PlayerController)
+				m_PlayerController->SetMonsterCountList(m_AliveMonsterMap);
 
-		if (m_SpawnDatas[i].SpawnCount <= m_SpawnCountMap[_Monster->GetDefaultObject()])
-			break;
+			if (m_SpawnCompleteMonsterCount == m_NeedSpawnMonsterCount)
+				m_SpawnComplete = true;
+
+			if (m_SpawnDatas[i].SpawnCount <= m_SpawnCountMap[_Monster->GetDefaultObject()])
+				break;
+		}
 	}
 }
 
@@ -223,6 +259,11 @@ void AShootingGameMode::Delegate_MonsterDie(UObject* _Monster)
 
 	if (m_SpawnComplete && m_AliveMonsterCount <= 0)
 	{
+		if (IsBossWave())
+		{
+			int a = 0;
+		}
+
 		m_Wave++;
 		StartWaveComplete();
 
