@@ -134,4 +134,5 @@ public:
 	bool AmmoMapIsFull() const;
 	FORCEINLINE float GetHP() const { return m_Status.CurHP; }
 	FORCEINLINE float GetStamina() const { return m_Status.CurStamina; }
+	FORCEINLINE EWaveState GetWaveState() const { return m_WaveState; }
 };

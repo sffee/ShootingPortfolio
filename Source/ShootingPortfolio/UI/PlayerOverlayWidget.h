@@ -32,6 +32,9 @@ public:
 	UTextBlock* WaveStartCompleteText;
 
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* SkipWaveText;
+
+	UPROPERTY(meta = (BindWidget))
 	UWeaponInventoryWidget* WeaponInventory;
 
 	UPROPERTY(meta = (BindWidget))

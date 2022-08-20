@@ -6,7 +6,6 @@
 #include "ShootingPortfolio/Monster/Monster.h"
 #include "ShootingPortfolio/Destructible/BossDoor.h"
 #include "Components/TextBlock.h"
-
 #include "LevelSequence/Public/LevelSequenceActor.h"
 #include "LevelSequence/Public/LevelSequence.h"
 #include "LevelSequence/Public/LevelSequencePlayer.h"
@@ -48,6 +47,15 @@ void AShootingGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	InitSpawnPointMap();
+
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	if (Controller)
+	{
+		FInputModeGameOnly Mode;
+
+		Controller->SetInputMode(Mode);
+		Controller->bShowMouseCursor = false;
+	}
 
 	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
 }

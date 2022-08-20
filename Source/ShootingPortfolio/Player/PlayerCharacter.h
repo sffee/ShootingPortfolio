@@ -202,6 +202,8 @@ private:
 
 	void RollDive();
 
+	void SkipWave();
+
 public:
 	void ReloadFinish();
 	void EquipFinish();

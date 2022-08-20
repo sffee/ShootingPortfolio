@@ -180,6 +180,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Key2", IE_Pressed, this, &APlayerCharacter::Key2ButtonPressed);
 	PlayerInputComponent->BindAction("Key3", IE_Pressed, this, &APlayerCharacter::Key3ButtonPressed);
 	PlayerInputComponent->BindAction("Key4", IE_Pressed, this, &APlayerCharacter::Key4ButtonPressed);
+
+	PlayerInputComponent->BindAction("SkipWave", IE_Pressed, this, &APlayerCharacter::SkipWave);
 }
 
 void APlayerCharacter::MoveForward(float _Value)
@@ -569,6 +571,19 @@ void APlayerCharacter::RollDive()
 	GetCharacterMovement()->Velocity = GetActorForwardVector() * GetCharacterMovement()->MaxWalkSpeed;
 }
 
+void APlayerCharacter::SkipWave()
+{
+	m_Controller = m_Controller == nullptr ? Cast<APlayerCharacterController>(Controller) : m_Controller;
+	if (m_Controller == nullptr)
+		return;
+
+	EWaveState WaveState = m_Controller->GetWaveState();
+	if (WaveState != EWaveState::Countdown)
+		return;
+
+	m_Controller->SetWaveState(EWaveState::Start);
+}
+
 void APlayerCharacter::RollDiveFinish()
 {
 	m_State = EPlayerState::Idle;
@@ -647,7 +662,7 @@ void APlayerCharacter::UpdateCrosshairHUD(float _DeltaTime)
 	if (m_HUD == nullptr)
 		return;
 
-	if (m_EquipWeapon && m_EquipWeapon->GetWeaponType() == EWeaponType::SniperRifle)
+	if (m_EquipWeapon && m_EquipWeapon->GetWeaponType() == EWeaponType::SniperRifle && m_IsAiming)
 	{
 		m_CrosshairSpread = 0.f;
 	}

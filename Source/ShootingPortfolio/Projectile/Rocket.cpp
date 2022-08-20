@@ -63,8 +63,6 @@ void ARocket::Explosion()
 		Controller,
 		true
 	);
-
-	DrawDebugSphere(GetWorld(), GetActorLocation(), m_DamageRadius, 20, FColor::Red, false, 5.f);
 }
 
 void ARocket::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

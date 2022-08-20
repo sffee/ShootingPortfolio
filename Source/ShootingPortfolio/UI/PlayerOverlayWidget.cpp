@@ -16,6 +16,7 @@ void UPlayerOverlayWidget::NativeConstruct()
 	WaveNumberText->SetVisibility(ESlateVisibility::Hidden);
 	WaveStartCompleteText->SetVisibility(ESlateVisibility::Hidden);
 	WaveMonsterCount->SetVisibility(ESlateVisibility::Hidden);
+	SkipWaveText->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UPlayerOverlayWidget::SetHP(float _CurHP, float _MaxHP)

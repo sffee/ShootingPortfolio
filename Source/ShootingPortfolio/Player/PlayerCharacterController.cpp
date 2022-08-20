@@ -18,7 +18,7 @@
 #include "ShootingPortfolio/Monster/SpawnMonsterData.h"
 
 APlayerCharacterController::APlayerCharacterController()
-	: m_StartWaveCountTime(2.f)
+	: m_StartWaveCountTime(60.f)
 	, m_RemainingWaveCountTime(0.f)
 	, m_PrevReminingWaveCountTime(0.f)
 	, m_FirstHUDUpdateComplete(false)
@@ -105,7 +105,8 @@ void APlayerCharacterController::WaveCountdown()
 		m_HUD->m_PlayerOverlayWidget == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveNumberText == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveCountdownText == nullptr ||
-		m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText == nullptr)
+		m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText == nullptr ||
+		m_HUD->m_PlayerOverlayWidget->SkipWaveText == nullptr)
 		return;
 
 	m_RemainingWaveCountTime = m_StartWaveCountTime;
@@ -113,6 +114,7 @@ void APlayerCharacterController::WaveCountdown()
 	m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetVisibility(ESlateVisibility::Hidden);
 	m_HUD->m_PlayerOverlayWidget->WaveNumberText->SetVisibility(ESlateVisibility::Hidden);
 	m_HUD->m_PlayerOverlayWidget->WaveCountdownText->SetVisibility(ESlateVisibility::Visible);
+	m_HUD->m_PlayerOverlayWidget->SkipWaveText->SetVisibility(ESlateVisibility::Visible);
 }
 
 void APlayerCharacterController::WaveStart()
@@ -122,12 +124,14 @@ void APlayerCharacterController::WaveStart()
 		m_HUD->m_PlayerOverlayWidget == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveCountdownText == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText == nullptr ||
+		m_HUD->m_PlayerOverlayWidget->SkipWaveText == nullptr ||
 		m_HUD->m_PlayerOverlayWidget->WaveStartAnimation == nullptr)
 		return;
 
 	m_HUD->m_PlayerOverlayWidget->WaveCountdownText->SetVisibility(ESlateVisibility::Hidden);
 	m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetVisibility(ESlateVisibility::Visible);
 	m_HUD->m_PlayerOverlayWidget->WaveStartCompleteText->SetText(FText::FromString(FString("Wave Start!")));
+	m_HUD->m_PlayerOverlayWidget->SkipWaveText->SetVisibility(ESlateVisibility::Hidden);
 
 	m_HUD->m_PlayerOverlayWidget->PlayAnimation(m_HUD->m_PlayerOverlayWidget->WaveStartAnimation);
 
