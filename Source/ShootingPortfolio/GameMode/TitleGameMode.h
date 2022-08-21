@@ -5,10 +5,7 @@
 #include "TitleGameMode.generated.h"
 
 class UTitleOverlayWidget;
-
-class ULevelSequence;
-class ALevelSequenceActor;
-class ULevelSequencePlayer;
+class USoundCue;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API ATitleGameMode : public AGameModeBase
@@ -16,20 +13,17 @@ class SHOOTINGPORTFOLIO_API ATitleGameMode : public AGameModeBase
 	GENERATED_BODY()
 	
 private:
-	UPROPERTY(EditAnywhere, Category = LevelSequence)
-	ULevelSequence* m_FadeInLevelSequence;
-
-	UPROPERTY()
-	ALevelSequenceActor* m_SequenceActor;
-
-	UPROPERTY()
-	ULevelSequencePlayer* m_SequencePlayer;
-	
-private:
 	TSubclassOf<UUserWidget> m_TitleOverlayWidgetClass;
 
 	UPROPERTY()
 	UTitleOverlayWidget* m_TitleOverlayWidget;
+
+private:
+	UPROPERTY(EditAnywhere)
+	USoundCue* m_GameStartSound;
+
+	UPROPERTY(EditAnywhere)
+	UAudioComponent* m_AudioComponent;
 	
 public:
 	ATitleGameMode();
@@ -42,5 +36,5 @@ public:
 
 private:
 	UFUNCTION()
-	void FadeInSequenceEnd();
+	void FadeOutEnd();
 };

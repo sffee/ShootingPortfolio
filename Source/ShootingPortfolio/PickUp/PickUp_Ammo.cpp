@@ -4,7 +4,7 @@
 #include "ShootingPortfolio/Player/PlayerCharacterController.h"
 
 APickUp_Ammo::APickUp_Ammo()
-	: m_AmmoAmountRate(0.3f)
+	: m_AmmoAmountRate(0.4f)
 	, m_RotationSpeed(90.f)
 {
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> AmmoMesh(TEXT("StaticMesh'/Game/MilitaryWeapSilver/Pickups/Pistol_Pickup.Pistol_Pickup'"));

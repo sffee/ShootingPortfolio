@@ -154,13 +154,11 @@ void UKhaimeraAnimInstance::AnimNotify_SpawnCircle()
 	}
 }
 
-void UKhaimeraAnimInstance::AnimNotify_SpawnMonsterHowl()
+void UKhaimeraAnimInstance::AnimNotify_SpawnMonster()
 {
 	m_Monster = m_Monster == nullptr ? Cast<AMonster>(TryGetPawnOwner()) : m_Monster;
 	if (m_Monster)
 	{
-		m_Monster->PlayMontage(m_Monster->GetAttackAnimMontage(), TEXT("SpawnMonsterHowl"));
-
 		for (auto& Circle : m_SpawnMonsterCircles)
 			Circle->MonsterSpawn();
 	}

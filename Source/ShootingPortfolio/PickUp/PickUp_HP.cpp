@@ -4,7 +4,7 @@
 #include "ShootingPortfolio/Player/PlayerCharacterController.h"
 
 APickUp_HP::APickUp_HP()
-	: m_HealAmount(200.f)
+	: m_HealAmount(100.f)
 {
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> HP(TEXT("NiagaraSystem'/Game/sA_PickupSet_1/Fx/NiagaraSystems/NS_Pickup_3.NS_Pickup_3'"));
 	if (HP.Succeeded())

@@ -21,6 +21,9 @@ private:
 	AWarningMark* m_WarningMark;
 
 	UPROPERTY(EditAnywhere)
+	UAnimMontage* m_DeathMontage;
+
+	UPROPERTY(EditAnywhere)
 	float m_JumpAttackRange;
 
 	UPROPERTY(EditAnywhere)

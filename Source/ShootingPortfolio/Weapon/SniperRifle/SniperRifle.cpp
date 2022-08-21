@@ -35,7 +35,7 @@ ASniperRifle::ASniperRifle()
 	m_CameraZoomFOV = 20.f;
 	m_ReloadSectionName = "Reload SniperRifle";
 	m_Type = EWeaponType::SniperRifle;
-	m_Damage = 50;
+	m_Damage = 40;
 	m_HeadDamageRate = 1.5f;
 	m_Range = 4000.f;
 	m_AimingFireBlendWeight = 0.9f;

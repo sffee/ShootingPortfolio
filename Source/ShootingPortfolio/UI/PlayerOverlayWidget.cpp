@@ -61,10 +61,22 @@ void UPlayerOverlayWidget::SetAmmo(int32 _Ammo, int32 _Capacity)
 	if (0 <= _Capacity)
 	{
 		AmmoWidget->Capacity->SetText(FText::AsNumber(_Capacity));
+
+		FSlateFontInfo FontInfo;
+		FontInfo.FontObject = LoadObject<UObject>(NULL, TEXT("Font'/Game/Game/Asset/Fonts/headhumancond_Font.headhumancond_Font'"));
+		FontInfo.OutlineSettings = FFontOutlineSettings(1.f);
+		FontInfo.Size = 30;
+		AmmoWidget->Capacity->SetFont(FontInfo);
 	}
 	else
 	{
 		const TCHAR* Txt = TEXT("∞");
 		AmmoWidget->Capacity->SetText(FText::FromString(Txt));
+
+		FSlateFontInfo FontInfo;
+		FontInfo.FontObject = LoadObject<UObject>(NULL, TEXT("Font'/Game/Game/Asset/Fonts/HeirofLightRegular_Font.HeirofLightRegular_Font'"));
+		FontInfo.OutlineSettings = FFontOutlineSettings(1.f);
+		FontInfo.Size = 30;
+		AmmoWidget->Capacity->SetFont(FontInfo);
 	}
 }

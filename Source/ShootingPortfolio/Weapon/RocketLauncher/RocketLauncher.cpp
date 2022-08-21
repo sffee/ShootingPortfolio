@@ -32,7 +32,7 @@ ARocketLauncher::ARocketLauncher()
 	if (Rocket.Succeeded())
 		m_Projectile = Rocket.Class;
 
-	m_Name = "RocketLauncher";
+	m_Name = "Rocket Launcher";
 	m_AttachSocketName = "AttachRocketLauncherSocket";
 	m_Ammo = 3;
 	m_Magazine = 3;
@@ -41,7 +41,7 @@ ARocketLauncher::ARocketLauncher()
 	m_CameraZoomFOV = 50.f;
 	m_ReloadSectionName = "Reload RocketLauncher";
 	m_Type = EWeaponType::RocketLauncher;
-	m_Damage = 50;
+	m_Damage = 100;
 	m_HeadDamageRate = 1.5f;
 	m_Range = 2000.f;
 	m_AimingFireBlendWeight = 0.9f;

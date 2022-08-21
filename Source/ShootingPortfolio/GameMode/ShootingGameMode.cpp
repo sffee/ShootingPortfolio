@@ -9,11 +9,13 @@
 #include "LevelSequence/Public/LevelSequenceActor.h"
 #include "LevelSequence/Public/LevelSequence.h"
 #include "LevelSequence/Public/LevelSequencePlayer.h"
+#include "Sound/SoundCue.h"
+#include "ShootingPortfolio/PickUp/PickUp.h"
 
 AShootingGameMode::AShootingGameMode()
 	: m_Wave(1)
 	, m_Phase2Wave(3)
-	, m_BossWave(6)
+	, m_BossWave(4)
 	, m_SpawnPointCount(1)
 	, m_SpawnCompleteMonsterCount(0)
 	, m_NeedSpawnMonsterCount(0)
@@ -21,7 +23,7 @@ AShootingGameMode::AShootingGameMode()
 	, m_SpawnComplete(false)
 	, m_WaveState(EWaveState::Countdown)
 {
-	PrimaryActorTick.bCanEverTick = true;
+	m_AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawn(TEXT("Blueprint'/Game/Game/Blueprints/Player/BP_PlayerCharacter.BP_PlayerCharacter_C'"));
 	if (PlayerPawn.Succeeded())
@@ -39,6 +41,10 @@ AShootingGameMode::AShootingGameMode()
 	if (BossAppearLevelSequence.Succeeded())
 		m_BossAppearLevelSequence = BossAppearLevelSequence.Object;
 
+	static ConstructorHelpers::FObjectFinder<USoundCue> BGM(TEXT("SoundCue'/Game/Game/Asset/Sound/BGM/PlayLevelBGM_Cue.PlayLevelBGM_Cue'"));
+	if (BGM.Succeeded())
+		m_AudioComponent->SetSound(BGM.Object);
+
 	HUDClass = AShootingHUD::StaticClass();
 }
 
@@ -47,6 +53,10 @@ void AShootingGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	InitSpawnPointMap();
+	InitPickUpItems();
+
+	if (m_AudioComponent)
+		m_AudioComponent->Play();
 
 	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
 	if (Controller)
@@ -57,12 +67,11 @@ void AShootingGameMode::BeginPlay()
 		Controller->bShowMouseCursor = false;
 	}
 
-	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
-}
+	APlayerCameraManager* PlayerCameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	if (PlayerCameraManager)
+		PlayerCameraManager->StartCameraFade(1.f, 0.f, 3.f, FLinearColor::Black, false, true);
 
-void AShootingGameMode::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	GetWorldTimerManager().SetTimer(m_GameStartTimer, this, &AShootingGameMode::GameStartTimerEnd, 1.f);
 }
 
 void AShootingGameMode::GameStartTimerEnd()
@@ -86,6 +95,8 @@ void AShootingGameMode::StartWaveComplete()
 		return;
 
 	m_PlayerController->SetWaveState(EWaveState::Complete);
+
+	SpawnPickUpItems();
 }
 
 void AShootingGameMode::InitSpawnPointMap()
@@ -109,6 +120,19 @@ void AShootingGameMode::InitSpawnPointMap()
 	}
 }
 
+void AShootingGameMode::InitPickUpItems()
+{
+	TArray<AActor*> PickUpItems;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APickUp::StaticClass(), PickUpItems);
+
+	for (const auto& Item : PickUpItems)
+	{
+		APickUp* PickUpItem = Cast<APickUp>(Item);
+		if (PickUpItem)
+			m_PickUpItems.Add(PickUpItem);
+	}
+}
+
 void AShootingGameMode::ResetData()
 {
 	m_SpawnTimers.Empty();
@@ -121,6 +145,12 @@ void AShootingGameMode::ResetData()
 	m_AliveMonsterCount = 0;
 
 	m_SpawnComplete = false;
+}
+
+void AShootingGameMode::SpawnPickUpItems()
+{
+	for (const auto& Item : m_PickUpItems)
+		Item->SpawnItem();
 }
 
 void AShootingGameMode::SpawnStart()

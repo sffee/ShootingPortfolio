@@ -39,7 +39,7 @@ ASteelShield::ASteelShield()
 	m_CollisionBox->SetBoxExtent(FVector(110.f, 5.f, 80.f));
 	m_CollisionBox->SetCollisionProfileName(FName("MonsterShield"));
 
-	m_Status.MaxHP = 30;
+	m_Status.MaxHP = 60;
 }
 
 void ASteelShield::BeginPlay()

@@ -159,9 +159,9 @@ struct FStartAmmo
 	FAmmoData SniperRifle;
 
 	FStartAmmo()
-		: SubmachineGun({ 30, 600 })
-		, RocketLauncher({ 3, 18 })
-		, SniperRifle({ 5, 30 })
+		: SubmachineGun({ 0, 600 })
+		, RocketLauncher({ 0, 18 })
+		, SniperRifle({ 0, 30 })
 	{
 	}
 };

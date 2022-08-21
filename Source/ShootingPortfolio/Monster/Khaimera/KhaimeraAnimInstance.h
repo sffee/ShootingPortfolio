@@ -65,7 +65,7 @@ public:
 	void AnimNotify_SpawnCircle();
 
 	UFUNCTION()
-	void AnimNotify_SpawnMonsterHowl();
+	void AnimNotify_SpawnMonster();
 
 	UFUNCTION()
 	void AnimNotify_JumpAttack();

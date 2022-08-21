@@ -49,6 +49,10 @@ AKhaimera::AKhaimera()
 	if (BossMonsterHPBarWidget.Succeeded())
 		m_BossMonsterHPBarWidgetClass = BossMonsterHPBarWidget.Class;
 
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> DeathMontage(TEXT("AnimMontage'/Game/Game/Blueprints/Monster/Khaimera/Animation/DeathMontage.DeathMontage'"));
+	if (DeathMontage.Succeeded())
+		m_DeathMontage = DeathMontage.Object;
+
 	GetMesh()->SetWorldLocation(FVector(0.f, 0.f, -142.f));
 	GetMesh()->SetWorldRotation(FRotator(0.f, -90.f, 0.f));
 	GetMesh()->bComponentUseFixedSkelBounds = true;
@@ -56,8 +60,8 @@ AKhaimera::AKhaimera()
 	GetCapsuleComponent()->SetCapsuleHalfHeight(140.f);
 	GetCapsuleComponent()->SetCapsuleRadius(50.f);
 
-	m_Status.MaxHP = 100;
-	m_Status.MaxShield = 50.f;
+	m_Status.MaxHP = 1000;
+	m_Status.MaxShield = 700.f;
 
 	m_Name = TEXT("Khaimera");
 }
@@ -84,7 +88,10 @@ void AKhaimera::BeginPlay()
 	{
 		UBlackboardComponent* BlackboardComponent = AIController->GetBlackboardComponent();
 		if (BlackboardComponent)
+		{
 			BlackboardComponent->SetValueAsBool(TEXT("SpawnMonster"), false);
+			BlackboardComponent->SetValueAsBool(TEXT("Death"), false);
+		}
 	}
 }
 
@@ -142,10 +149,10 @@ float AKhaimera::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEven
 	if (IsUpdateShieldBar)
 		UpdateShieldBarWidget();
 
+	float HPPercent = m_Status.CurHP / m_Status.MaxHP;
 	if (m_SpawnMonsterPattern == false)
 	{
-		float HPPercent = m_Status.CurHP / m_Status.MaxHP;
-		if (HPPercent <= 0.5f)
+		if (HPPercent <= 0.7f)
 		{
 			m_SpawnMonsterPattern = true;
 
@@ -156,6 +163,29 @@ float AKhaimera::TakeDamage(float _DamageAmount, FDamageEvent const& _DamageEven
 				if (BlackboardComponent)
 					BlackboardComponent->SetValueAsBool(TEXT("SpawnMonster"), true);
 			}
+		}
+	}
+
+	if (HPPercent <= 0.f)
+	{
+		AAIController* AIController = Cast<AAIController>(Controller);
+		if (AIController)
+		{
+			AIController->StopMovement();
+
+			UBlackboardComponent* BlackboardComponent = AIController->GetBlackboardComponent();
+			if (BlackboardComponent)
+				BlackboardComponent->SetValueAsBool(TEXT("Death"), true);
+		}
+
+		UAnimInstance* Animinst = GetMesh()->GetAnimInstance();
+		if (Animinst && m_DeathMontage)
+		{
+			Animinst->Montage_Play(m_DeathMontage);
+			DestroyWarningMark();
+
+			if (m_BossMonsterHPBarWidget)
+				m_BossMonsterHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 

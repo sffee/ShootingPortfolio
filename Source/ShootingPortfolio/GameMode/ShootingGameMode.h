@@ -26,6 +26,7 @@ class APlayerCharacterController;
 class ULevelSequence;
 class ULevelSequencePlayer;
 class ALevelSequenceActor;
+class APickUp;
 
 UCLASS()
 class SHOOTINGPORTFOLIO_API AShootingGameMode : public AGameModeBase
@@ -41,6 +42,10 @@ private:
 
 	UPROPERTY()
 	ULevelSequencePlayer* m_SequencePlayer;
+
+private:
+	UPROPERTY(EditAnywhere)
+	UAudioComponent* m_AudioComponent;
 	
 private:
 	UPlayerOverlayWidget* m_PlayerOverlayWidget;
@@ -78,6 +83,10 @@ private:
 	EWaveState m_WaveState;
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = PickUp)
+	TArray<APickUp*> m_PickUpItems;
+
+private:
 	TMap<int32, FMonsterSpawnPointData> m_SpawnPointMap;
 
 	TArray<FTimerHandle> m_SpawnTimers;
@@ -93,7 +102,6 @@ public:
 
 public:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 
 private:
 	void GameStartTimerEnd();
@@ -104,7 +112,9 @@ private:
 
 private:
 	void InitSpawnPointMap();
+	void InitPickUpItems();
 	void ResetData();
+	void SpawnPickUpItems();
 
 public:
 	void SpawnStart();

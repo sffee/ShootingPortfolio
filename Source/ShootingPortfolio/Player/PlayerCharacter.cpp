@@ -516,6 +516,10 @@ void APlayerCharacter::Sprint()
 	if (m_IsAiming)
 		return;
 
+	float Stamina = m_Controller->GetStamina();
+	if (Stamina < 5.f)
+		return;
+
 	if (m_IsSprint)
 	{
 		StopSprint();

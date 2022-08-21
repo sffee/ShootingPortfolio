@@ -18,7 +18,7 @@
 #include "ShootingPortfolio/Monster/SpawnMonsterData.h"
 
 APlayerCharacterController::APlayerCharacterController()
-	: m_StartWaveCountTime(60.f)
+	: m_StartWaveCountTime(120.f)
 	, m_RemainingWaveCountTime(0.f)
 	, m_PrevReminingWaveCountTime(0.f)
 	, m_FirstHUDUpdateComplete(false)

@@ -3,7 +3,7 @@
 #include "NiagaraComponent.h"
 
 APickUp::APickUp()
-	: m_SpawnCooltime(30.f)
+	: m_IsSpawned(true)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -26,8 +26,11 @@ APickUp::APickUp()
 	m_CollisionSphere->SetCollisionProfileName(TEXT("PickUp"));
 }
 
-void APickUp::SpawnTimerEnd()
+void APickUp::SpawnItem()
 {
+	if (m_IsSpawned)
+		return;
+
 	if (m_NiagaraComponent)
 		m_NiagaraComponent->SetVisibility(true);
 
@@ -35,21 +38,11 @@ void APickUp::SpawnTimerEnd()
 		m_StaticMesh->SetVisibility(true);
 
 	m_CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	m_IsSpawned = true;
 }
 
-void APickUp::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	m_CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APickUp::OnBeginOverlap);
-}
-
-void APickUp::Tick(float DeltaTime)
-{
-
-}
-
-void APickUp::OnBeginOverlap(UPrimitiveComponent* _OverlappedComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)
+void APickUp::UnSpawnItem()
 {
 	if (m_NiagaraComponent)
 		m_NiagaraComponent->SetVisibility(false);
@@ -59,11 +52,30 @@ void APickUp::OnBeginOverlap(UPrimitiveComponent* _OverlappedComponent, AActor* 
 
 	m_CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	m_IsSpawned = false;
+}
+
+void APickUp::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	UnSpawnItem();
+
+	m_CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APickUp::OnBeginOverlap);
+}
+
+void APickUp::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
+void APickUp::OnBeginOverlap(UPrimitiveComponent* _OverlappedComponent, AActor* _OtherActor, UPrimitiveComponent* _OtherComp, int32 _OtherBodyIndex, bool _bFromSweep, const FHitResult& _SweepResult)
+{
+	UnSpawnItem();
+
 	if (m_PickUpNiagaraSystem)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), m_PickUpNiagaraSystem, m_NiagaraComponent->GetComponentLocation());
 
 	if (m_PickUpSound)
 		UGameplayStatics::PlaySound2D(GetWorld(), m_PickUpSound);
-
-	GetWorldTimerManager().SetTimer(m_SpawnTimer, this, &APickUp::SpawnTimerEnd, m_SpawnCooltime);
 }

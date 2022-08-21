@@ -35,7 +35,7 @@ ASubmachineGun::ASubmachineGun()
 	m_CameraZoomFOV = 50.f;
 	m_ReloadSectionName = "Reload SMG";
 	m_Type = EWeaponType::SubmachineGun;
-	m_Damage = 10;
+	m_Damage = 6;
 	m_HeadDamageRate = 1.5f;
-	m_Range = 1000.f;
+	m_Range = 2000.f;
 }

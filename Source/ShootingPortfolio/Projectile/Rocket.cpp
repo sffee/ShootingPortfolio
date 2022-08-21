@@ -3,7 +3,7 @@
 #include "NiagaraSystem.h"
 
 ARocket::ARocket()
-	: m_DamageRadius(250.f)
+	: m_DamageRadius(350.f)
 {	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> RocketMesh(TEXT("StaticMesh'/Game/MilitaryWeapSilver/Weapons/RocketLauncherA_Ammo.RocketLauncherA_Ammo'"));
 	if (RocketMesh.Succeeded())

@@ -41,7 +41,7 @@ AMinions::AMinions()
 	if (m_HPBarWidgetComponent)
 		m_HPBarWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 180.f));
 
-	m_Status.MaxHP = 30;
+	m_Status.MaxHP = 40;
 
 	m_Name = TEXT("Minions");
 }

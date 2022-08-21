@@ -37,16 +37,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Info)
 	USoundCue* m_PickUpSound;
 
-	UPROPERTY(EditAnywhere, Category = Info)
-	float m_SpawnCooltime;
-
-	FTimerHandle m_SpawnTimer;
+	UPROPERTY(VisibleAnywhere, Category = Info)
+	bool m_IsSpawned;
 	
 public:	
 	APickUp();
 
-protected:
-	void SpawnTimerEnd();
+public:
+	void SpawnItem();
+	void UnSpawnItem();
 
 protected:
 	virtual void BeginPlay() override;
