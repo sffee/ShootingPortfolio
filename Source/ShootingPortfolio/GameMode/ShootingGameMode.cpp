@@ -81,7 +81,10 @@ void AShootingGameMode::GameStartTimerEnd()
 
 void AShootingGameMode::StartWaveCountdown()
 {
-	m_PlayerController = m_PlayerController == nullptr ? Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) : m_PlayerController;
+	m_PlayerController = m_PlayerController == nullptr ?
+		Cast<APlayerCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)) :
+		m_PlayerController;
+
 	if (m_PlayerController == nullptr)
 		return;
 
@@ -297,11 +300,6 @@ void AShootingGameMode::Delegate_MonsterDie(UObject* _Monster)
 
 	if (m_SpawnComplete && m_AliveMonsterCount <= 0)
 	{
-		if (IsBossWave())
-		{
-			int a = 0;
-		}
-
 		m_Wave++;
 		StartWaveComplete();
 
@@ -309,3 +307,4 @@ void AShootingGameMode::Delegate_MonsterDie(UObject* _Monster)
 			m_SpawnPointCount++;
 	}
 }
+

@@ -26,3 +26,4 @@ void AProjectileWeapon::Fire(const FHitResult& _TraceHitResult)
 
 	Super::Fire(_TraceHitResult);
 }
+
